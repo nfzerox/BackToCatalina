@@ -1,0 +1,352 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXFileReference section */
+		045FD9652F1D8349000D3963 /* libBackToCatalina.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libBackToCatalina.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		045FD9792F1D83BC000D3963 /* Exceptions for "BackToCatalina" folder in "BackToCatalina" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			additionalCompilerFlagsByRelativePath = {
+				ZKSwizzle.m = "-fno-objc-arc";
+			};
+			target = 045FD9642F1D8349000D3963 /* BackToCatalina */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		045FD9672F1D8349000D3963 /* BackToCatalina */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				045FD9792F1D83BC000D3963 /* Exceptions for "BackToCatalina" folder in "BackToCatalina" target */,
+			);
+			path = BackToCatalina;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		045FD9632F1D8349000D3963 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		045FD95C2F1D8349000D3963 = {
+			isa = PBXGroup;
+			children = (
+				045FD9672F1D8349000D3963 /* BackToCatalina */,
+				045FD9662F1D8349000D3963 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		045FD9662F1D8349000D3963 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				045FD9652F1D8349000D3963 /* libBackToCatalina.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		045FD9612F1D8349000D3963 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		045FD9642F1D8349000D3963 /* BackToCatalina */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 045FD96E2F1D8349000D3963 /* Build configuration list for PBXNativeTarget "BackToCatalina" */;
+			buildPhases = (
+				045FD9612F1D8349000D3963 /* Headers */,
+				045FD9622F1D8349000D3963 /* Sources */,
+				045FD9632F1D8349000D3963 /* Frameworks */,
+				045FD9842F1D8469000D3963 /* Generate Package */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				045FD9672F1D8349000D3963 /* BackToCatalina */,
+			);
+			name = BackToCatalina;
+			packageProductDependencies = (
+			);
+			productName = BackToCatalina;
+			productReference = 045FD9652F1D8349000D3963 /* libBackToCatalina.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		045FD95D2F1D8349000D3963 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 2620;
+				TargetAttributes = {
+					045FD9642F1D8349000D3963 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+				};
+			};
+			buildConfigurationList = 045FD9602F1D8349000D3963 /* Build configuration list for PBXProject "BackToCatalina" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 045FD95C2F1D8349000D3963;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 045FD9662F1D8349000D3963 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				045FD9642F1D8349000D3963 /* BackToCatalina */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		045FD9842F1D8469000D3963 /* Generate Package */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Generate Package";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e # Exit immediately if a command exits with a non-zero status\n\n# --- CONFIGURATION ---\nPACKAGE_NAME=\"${PRODUCT_NAME}.pkg\"\nINSTALL_LOCATION=\"/var/ammonia/core/tweaks\"\nSTAGING_DIR=\"$TMPDIR/$PRODUCT_NAME-staging\"\nMARKETING_VERSION=\"1.0\"\n\n# Define paths to your specific assets\n# Assuming these are in your project folder ($SRCROOT)\nBLACKLIST_FILE=\"$SRCROOT/libBackToCatalina.dylib.blacklist\"\nBUNDLE_FILE=\"$SRCROOT/SystemAppearance.bundle\"\n\n# --- PREPARATION ---\n\n# 1. Clean and create a temporary staging directory\necho \"Cleaning staging directory: $STAGING_DIR\"\nrm -rf \"$STAGING_DIR\"\nmkdir -p \"$STAGING_DIR\"\n\n# --- COPYING FILES ---\n\n# 2. Copy the built dylib (The current target's product)\necho \"Copying dylib...\"\ncp \"$BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\" \"$STAGING_DIR/\"\n\n# 3. Copy the blacklist file\nif [ -f \"$BLACKLIST_FILE\" ]; then\n    echo \"Copying blacklist...\"\n    cp \"$BLACKLIST_FILE\" \"$STAGING_DIR/\"\nelse\n    echo \"Error: Blacklist file not found at $BLACKLIST_FILE\"\n    exit 1\nfi\n\n# 4. Copy the SystemAppearance bundle\nif [ -d \"$BUNDLE_FILE\" ]; then\n    echo \"Copying bundle...\"\n    cp -r \"$BUNDLE_FILE\" \"$STAGING_DIR/\"\nelse\n    echo \"Error: Bundle not found at $BUNDLE_FILE\"\n    exit 1\nfi\n\n# --- PACKAGING ---\n\n# 5. Build the package\n# We use --root to specify the folder contents to package\n# We use --install-location to specify where they go on the device\necho \"Generating .pkg at $BUILT_PRODUCTS_DIR/$PACKAGE_NAME\"\n\npkgbuild --root \"$STAGING_DIR\" \\\n         --identifier \"com.apple.systemappearance\" \\\n         --version \"$MARKETING_VERSION\" \\\n         --install-location \"$INSTALL_LOCATION\" \\\n         \"$SRCROOT/../$PACKAGE_NAME\"\n\necho \"Package generated successfully.\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		045FD9622F1D8349000D3963 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		045FD96C2F1D8349000D3963 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.7;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		045FD96D2F1D8349000D3963 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.7;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		045FD96F2F1D8349000D3963 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					arm64e,
+					arm64,
+					x86_64,
+				);
+				CODE_SIGN_STYLE = Automatic;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				EXECUTABLE_PREFIX = lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/BackToCatalina",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_LDFLAGS = "-lc++";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		045FD9702F1D8349000D3963 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					arm64e,
+					arm64,
+					x86_64,
+				);
+				CODE_SIGN_STYLE = Automatic;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				EXECUTABLE_PREFIX = lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/BackToCatalina",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_LDFLAGS = "-lc++";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		045FD9602F1D8349000D3963 /* Build configuration list for PBXProject "BackToCatalina" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				045FD96C2F1D8349000D3963 /* Debug */,
+				045FD96D2F1D8349000D3963 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		045FD96E2F1D8349000D3963 /* Build configuration list for PBXNativeTarget "BackToCatalina" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				045FD96F2F1D8349000D3963 /* Debug */,
+				045FD9702F1D8349000D3963 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 045FD95D2F1D8349000D3963 /* Project object */;
+}

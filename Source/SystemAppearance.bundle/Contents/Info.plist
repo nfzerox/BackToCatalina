@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BuildMachineOSBuild</key>
+	<string>23A344014</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>SystemAppearance</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.apple.systemappearance</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>SystemAppearance</string>
+	<key>CFBundlePackageType</key>
+	<string>BNDL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>MacOSX</string>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>323</string>
+	<key>DTCompiler</key>
+	<string>com.apple.compilers.llvm.clang.1_0</string>
+	<key>DTPlatformBuild</key>
+	<string></string>
+	<key>DTPlatformName</key>
+	<string>macosx</string>
+	<key>DTPlatformVersion</key>
+	<string>15.7</string>
+	<key>DTSDKBuild</key>
+	<string>24G201t</string>
+	<key>DTSDKName</key>
+	<string>macosx15.7.internal</string>
+	<key>DTXcode</key>
+	<string>1630</string>
+	<key>DTXcodeBuild</key>
+	<string>16E6052g</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>15.7</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2013-2016 Apple Inc. All rights reserved.</string>
+</dict>
+</plist>
