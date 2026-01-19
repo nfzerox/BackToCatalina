@@ -191,3 +191,14 @@ routined
 ContextStoreAgent
 com.apple.hiservices-xpcservice
 talagent
+Firefox
+Shortcuts
+ControlCenter
+Dock
+Magnifier
+Final Cut Pro
+Logic Pro
+Spotlight
+com.apple.WebKit.WebContent
+com.apple.dock.extra
+TextInputMenuAgent

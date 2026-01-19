@@ -145,7 +145,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e # Exit immediately if a command exits with a non-zero status\n\n# --- CONFIGURATION ---\nPACKAGE_NAME=\"${PRODUCT_NAME}.pkg\"\nINSTALL_LOCATION=\"/var/ammonia/core/tweaks\"\nSTAGING_DIR=\"$TMPDIR/$PRODUCT_NAME-staging\"\nMARKETING_VERSION=\"1.0\"\n\n# Define paths to your specific assets\n# Assuming these are in your project folder ($SRCROOT)\nBLACKLIST_FILE=\"$SRCROOT/libBackToCatalina.dylib.blacklist\"\nBUNDLE_FILE=\"$SRCROOT/SystemAppearance.bundle\"\n\n# --- PREPARATION ---\n\n# 1. Clean and create a temporary staging directory\necho \"Cleaning staging directory: $STAGING_DIR\"\nrm -rf \"$STAGING_DIR\"\nmkdir -p \"$STAGING_DIR\"\n\n# --- COPYING FILES ---\n\n# 2. Copy the built dylib (The current target's product)\necho \"Copying dylib...\"\ncp \"$BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\" \"$STAGING_DIR/\"\n\n# 3. Copy the blacklist file\nif [ -f \"$BLACKLIST_FILE\" ]; then\n    echo \"Copying blacklist...\"\n    cp \"$BLACKLIST_FILE\" \"$STAGING_DIR/\"\nelse\n    echo \"Error: Blacklist file not found at $BLACKLIST_FILE\"\n    exit 1\nfi\n\n# 4. Copy the SystemAppearance bundle\nif [ -d \"$BUNDLE_FILE\" ]; then\n    echo \"Copying bundle...\"\n    cp -r \"$BUNDLE_FILE\" \"$STAGING_DIR/\"\nelse\n    echo \"Error: Bundle not found at $BUNDLE_FILE\"\n    exit 1\nfi\n\n# --- PACKAGING ---\n\n# 5. Build the package\n# We use --root to specify the folder contents to package\n# We use --install-location to specify where they go on the device\necho \"Generating .pkg at $BUILT_PRODUCTS_DIR/$PACKAGE_NAME\"\n\npkgbuild --root \"$STAGING_DIR\" \\\n         --identifier \"com.apple.systemappearance\" \\\n         --version \"$MARKETING_VERSION\" \\\n         --install-location \"$INSTALL_LOCATION\" \\\n         \"$SRCROOT/../$PACKAGE_NAME\"\n\necho \"Package generated successfully.\"\n";
+			shellScript = "set -e # Exit immediately if a command exits with a non-zero status\n\n# --- CONFIGURATION ---\nPACKAGE_NAME=\"${PRODUCT_NAME}.pkg\"\nINSTALL_LOCATION=\"/var/ammonia/core/tweaks\"\nSTAGING_DIR=\"$TMPDIR/$PRODUCT_NAME-staging\"\nSCRIPTS_DIR=\"$TMPDIR/$PRODUCT_NAME-scripts\" \nMARKETING_VERSION=\"1.0\"\n\nif [ \"${CONFIGURATION}\" = \"Debug\" ]; then\n  echo \"🚧 Running Debug Build Script...\"\n  echo \"If this doesn't work, open Terminal and run: sudo chmod -R a+rwx /private/var/ammonia/core/tweaks\"\n  rm /private/var/ammonia/core/tweaks/libBackToCatalina.dylib\n  sleep 0.5\n  cp \"$BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\" \"$INSTALL_LOCATION/\"\n  exit 0\nfi\n\n# Define paths to your specific assets\nBLACKLIST_FILE=\"$SRCROOT/libBackToCatalina.dylib.blacklist\"\nBUNDLE_FILE=\"$SRCROOT/SystemAppearance.bundle\"\n\n# --- PREPARATION ---\n\n# 1. Clean and create temporary directories\necho \"Cleaning staging and scripts directories...\"\nrm -rf \"$STAGING_DIR\" \"$SCRIPTS_DIR\"\nmkdir -p \"$STAGING_DIR\"\nmkdir -p \"$SCRIPTS_DIR\"\n\n# --- SCRIPTS GENERATION ---\n\n# 2. Create the preinstall script\necho \"Generating preinstall script...\"\nPREINSTALL_PATH=\"$SCRIPTS_DIR/preinstall\"\n\ncat <<EOF > \"$PREINSTALL_PATH\"\n#!/bin/bash\nrm -f /private/var/ammonia/core/tweaks/libCatalinaUI.dylib\nrm -f /private/var/ammonia/core/tweaks/libCatalinaUI.dylib.blacklist\nexit 0\nEOF\n\nchmod +x \"$PREINSTALL_PATH\"\n\n# 3. Create the postinstall script (UPDATED)\necho \"Generating postinstall script...\"\nPOSTINSTALL_PATH=\"$SCRIPTS_DIR/postinstall\"\n\ncat <<EOF > \"$POSTINSTALL_PATH\"\n#!/bin/bash\n\n# 1. Set ephemeral environment variable\nlaunchctl setenv FEATUREFLAGS_DISABLED SwiftUI/Solarium\n\n# 2. Create Directory and write preference\nmkdir -p /Library/Preferences/FeatureFlags/Domain\ndefaults write /Library/Preferences/FeatureFlags/Domain/SwiftUI.plist Solarium -dict Enabled -bool false\n\n# 3. Append boot-args without overwriting\n# Read current args, redirecting stderr to null in case variable doesn't exist\nCURRENT_ARGS=\\$(nvram boot-args 2>/dev/null | sed 's/boot-args[[:space:]]*//')\n\n# Check if our specific flag is already present\nif [[ \"\\$CURRENT_ARGS\" != *\"-arm64e_preview_abi\"* ]]; then\n    if [ -z \"\\$CURRENT_ARGS\" ]; then\n        # If no args exist, create the variable\n        nvram boot-args=\"-arm64e_preview_abi\"\n    else\n        # If args exist, append our flag\n        nvram boot-args=\"\\$CURRENT_ARGS -arm64e_preview_abi\"\n    fi\nfi\n\nexit 0\nEOF\n\nchmod +x \"$POSTINSTALL_PATH\"\n\n# --- COPYING FILES ---\n\n# 4. Copy the built dylib\necho \"Copying dylib...\"\ncp \"$BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\" \"$STAGING_DIR/\"\n\n# 5. Copy the blacklist file\nif [ -f \"$BLACKLIST_FILE\" ]; then\n    echo \"Copying blacklist...\"\n    cp \"$BLACKLIST_FILE\" \"$STAGING_DIR/\"\nelse\n    echo \"Error: Blacklist file not found at $BLACKLIST_FILE\"\n    exit 1\nfi\n\n# 6. Copy the SystemAppearance bundle\nif [ -d \"$BUNDLE_FILE\" ]; then\n    echo \"Copying bundle...\"\n    mkdir -p \"$STAGING_DIR/libBackToCatalina/\"\n    cp -r \"$BUNDLE_FILE\" \"$STAGING_DIR/libBackToCatalina/\"\nelse\n    echo \"Error: Bundle not found at $BUNDLE_FILE\"\n    exit 1\nfi\n\n# --- PACKAGING ---\n\n# 7. Build the package\necho \"Generating .pkg at $BUILT_PRODUCTS_DIR/$PACKAGE_NAME\"\n\npkgbuild --root \"$STAGING_DIR\" \\\n         --scripts \"$SCRIPTS_DIR\" \\\n         --identifier \"com.apple.systemappearance\" \\\n         --version \"$MARKETING_VERSION\" \\\n         --install-location \"$INSTALL_LOCATION\" \\\n         \"$SRCROOT/../$PACKAGE_NAME\"\n\necho \"Package generated successfully.\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -278,10 +278,10 @@
 		045FD96F2F1D8349000D3963 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ARCHS = (
+					"$(ARCHS_STANDARD)",
 					arm64e,
-					arm64,
-					x86_64,
 				);
 				CODE_SIGN_STYLE = Automatic;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -303,10 +303,10 @@
 		045FD9702F1D8349000D3963 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ARCHS = (
+					"$(ARCHS_STANDARD)",
 					arm64e,
-					arm64,
-					x86_64,
 				);
 				CODE_SIGN_STYLE = Automatic;
 				DYLIB_COMPATIBILITY_VERSION = 1;

@@ -1,7 +1,8 @@
-#import "ZKSwizzle.h"
-#import <Cocoa/Cocoa.h>
-#import <UserNotifications/UserNotifications.h>
+#import "BackToCatalina.h"
+
 #import "dobby.h"
+#import "ZKSwizzle.h"
+#import <UserNotifications/UserNotifications.h>
 
 Boolean (*_CFExecutableLinkedOnOrAfterOld)(signed long long version);
 
@@ -11,28 +12,33 @@ Boolean _CFExecutableLinkedOnOrAfterNew(signed long long version) {
 
 
 Boolean (*SidebarGoldenMetricsOld)(void);
-Boolean SidebarGoldenMetricsNew() {
+Boolean SidebarGoldenMetricsNew(void) {
     return false;
 }
 
 Boolean (*TableViewGoldenStylesOld)(void);
-Boolean TableViewGoldenStylesNew() {
+Boolean TableViewGoldenStylesNew(void) {
     return false;
 }
 
 Boolean (*CompatWidgetOld)(void);
-Boolean CompatWidgetNew() {
+Boolean CompatWidgetNew(void) {
     return true;
 }
 
 Boolean (*SelectionRolloverOld)(void);
-Boolean SelectionRolloverNew() {
+Boolean SelectionRolloverNew(void) {
     return false;
 }
 
-NSBundle* carBundle;
 NSAppearance* aqua;
 NSAppearance* darkAqua;
+
+NSOperatingSystemVersion tahoeVersion = {
+    .majorVersion = 26,
+    .minorVersion = 0,
+    .patchVersion = 0
+};
 
 WEAK_IMPORT_ATTRIBUTE
 @interface NSThemeFrame : NSView @end
@@ -44,7 +50,6 @@ WEAK_IMPORT_ATTRIBUTE
 @interface windowHook : NSWindow @end
 @interface windowHookMin : NSWindow @end
 @interface fontHook : NSFont @end
-@interface statusHook : NSStatusItem @end
 @interface notificationHook : NSUserNotification @end
 @interface notificationHook2 : UNNotificationSound @end
 @interface tableHook : NSTableView @end
@@ -53,10 +58,11 @@ WEAK_IMPORT_ATTRIBUTE
 @implementation load
 
 +(void)load {
-    carBundle = [NSBundle bundleWithPath:@"/private/var/ammonia/core/tweaks/SystemAppearance.bundle"];
-    aqua = [[NSAppearance alloc] initWithAppearanceNamed:@"NSAppearanceNameAqua" bundle:carBundle];
-    darkAqua = [[NSAppearance alloc] initWithAppearanceNamed:@"NSAppearanceNameDarkAqua" bundle:carBundle];
-    
+    carBundle = [NSBundle bundleWithPath:@"/private/var/ammonia/core/tweaks/libBackToCatalina/SystemAppearance.bundle"];
+    aqua = [[NSAppearance alloc] initWithAppearanceNamed:@"SystemAppearance" bundle:carBundle];
+    darkAqua = [[NSAppearance alloc] initWithAppearanceNamed:@"DarkAquaAppearance" bundle:carBundle];
+    isTahoeOrLater = [NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:tahoeVersion];
+
     DobbyHook(DobbySymbolResolver("AppKit", "_NSSidebarUsesGoldenMetrics"),
               SidebarGoldenMetricsNew,
               &SidebarGoldenMetricsOld);
@@ -83,10 +89,11 @@ WEAK_IMPORT_ATTRIBUTE
         ZKSwizzle(windowHook, NSWindow);
     }
     ZKSwizzle(appearanceHook, NSView);
-    ZKSwizzle(themeHook, NSThemeFrame);
+    if (!isTahoeOrLater) {
+        ZKSwizzle(themeHook, NSThemeFrame);
+    }
     ZKSwizzle(tbHook, NSTrackingSeparatorToolbarItem);
     ZKSwizzle(fontHook, NSFont);
-    ZKSwizzle(statusHook, NSStatusItem);
     ZKSwizzle(notificationHook, _NSConcreteUserNotification);
     ZKSwizzle(notificationHook2, UNNotificationSound);
     ZKSwizzle(splitViewHook, NSSplitViewItem);
@@ -202,15 +209,6 @@ WEAK_IMPORT_ATTRIBUTE
 @implementation fontHook
 +(NSFont*)titleBarFontOfSize:(CGFloat)fontSize {
     return [NSFont systemFontOfSize:fontSize];
-}
-@end
-
-@implementation statusHook
--(void)setVisible:(BOOL)visible {
-    if ([[self autosaveName] isEqual:@"BentoBox"])
-        return ZKOrig(void, false);
-    else
-        return ZKOrig(void, visible);
 }
 @end
 
