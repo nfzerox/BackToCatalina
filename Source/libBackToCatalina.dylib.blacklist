@@ -192,6 +192,7 @@ ContextStoreAgent
 com.apple.hiservices-xpcservice
 talagent
 Firefox
+WeChat
 Shortcuts
 ControlCenter
 Dock
@@ -206,5 +207,7 @@ iMovie
 GarageBand
 Spotlight
 com.apple.WebKit.WebContent
+com.apple.WebKit.GPU
 com.apple.dock.extra
 TextInputMenuAgent
+nsattributedstringagent

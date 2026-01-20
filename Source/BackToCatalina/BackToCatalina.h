@@ -1,4 +1,4 @@
 #import <Cocoa/Cocoa.h>
 
-static NSBundle* carBundle;
-static BOOL isTahoeOrLater;
+extern NSBundle* carBundle;
+extern BOOL isTahoeOrLater;

@@ -4,6 +4,9 @@
 #import "ZKSwizzle.h"
 #import <UserNotifications/UserNotifications.h>
 
+NSBundle* carBundle;
+BOOL isTahoeOrLater;
+
 Boolean (*_CFExecutableLinkedOnOrAfterOld)(signed long long version);
 
 Boolean _CFExecutableLinkedOnOrAfterNew(signed long long version) {
@@ -31,9 +34,6 @@ Boolean SelectionRolloverNew(void) {
     return false;
 }
 
-NSAppearance* aqua;
-NSAppearance* darkAqua;
-
 NSOperatingSystemVersion tahoeVersion = {
     .majorVersion = 26,
     .minorVersion = 0,
@@ -46,21 +46,17 @@ WEAK_IMPORT_ATTRIBUTE
 @interface load : NSObject @end
 @interface tbHook: NSTrackingSeparatorToolbarItem @end
 @interface splitViewHook : NSSplitViewItem @end
-@interface appearanceHook : NSView @end
 @interface windowHook : NSWindow @end
 @interface windowHookMin : NSWindow @end
 @interface fontHook : NSFont @end
 @interface notificationHook : NSUserNotification @end
 @interface notificationHook2 : UNNotificationSound @end
-@interface tableHook : NSTableView @end
 @interface themeHook : NSThemeFrame @end
 
 @implementation load
 
 +(void)load {
     carBundle = [NSBundle bundleWithPath:@"/private/var/ammonia/core/tweaks/libBackToCatalina/SystemAppearance.bundle"];
-    aqua = [[NSAppearance alloc] initWithAppearanceNamed:@"SystemAppearance" bundle:carBundle];
-    darkAqua = [[NSAppearance alloc] initWithAppearanceNamed:@"DarkAquaAppearance" bundle:carBundle];
     isTahoeOrLater = [NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:tahoeVersion];
 
     DobbyHook(DobbySymbolResolver("AppKit", "_NSSidebarUsesGoldenMetrics"),
@@ -88,7 +84,6 @@ WEAK_IMPORT_ATTRIBUTE
     else {
         ZKSwizzle(windowHook, NSWindow);
     }
-    ZKSwizzle(appearanceHook, NSView);
     if (!isTahoeOrLater) {
         ZKSwizzle(themeHook, NSThemeFrame);
     }
@@ -97,7 +92,6 @@ WEAK_IMPORT_ATTRIBUTE
     ZKSwizzle(notificationHook, _NSConcreteUserNotification);
     ZKSwizzle(notificationHook2, UNNotificationSound);
     ZKSwizzle(splitViewHook, NSSplitViewItem);
-    ZKSwizzle(tableHook, NSTableView);
 }
 
 @end
@@ -193,20 +187,11 @@ WEAK_IMPORT_ATTRIBUTE
 
 @end
 
-@implementation appearanceHook
-
--(NSAppearance *)appearance {
-    NSString* interfaceStyle = [NSUserDefaults.standardUserDefaults stringForKey:@"AppleInterfaceStyle"];
-    if ([interfaceStyle isEqual:@"Dark"] && darkAqua)
-        return darkAqua;
-    else if (aqua)
-        return aqua;
-
-    return ZKOrig(NSAppearance *);
-}
-@end
-
 @implementation fontHook
++ (NSFont *)_windowTitleFontWithSubtitle:(BOOL)subtitle toolbarStyle:(NSWindowToolbarStyle)toolbarStyle {
+    return [NSFont systemFontOfSize:0];
+}
+
 +(NSFont*)titleBarFontOfSize:(CGFloat)fontSize {
     return [NSFont systemFontOfSize:fontSize];
 }
@@ -228,20 +213,4 @@ WEAK_IMPORT_ATTRIBUTE
     return ZKOrig(id, a0, a1, a2, a3);
 }
 
-@end
-
-@implementation tableHook
-- (NSSize)intercellSpacing {
-    NSSize orig = ZKOrig(NSSize);
-    if (orig.width == 17 && orig.height == 0)
-        return NSMakeSize(3,2);
-    return orig;
-}
-
-- (CGFloat)rowHeight {
-    CGFloat orig = ZKOrig(CGFloat);
-    if (orig == 24.0 && [self rowSizeStyle] == NSTableViewRowSizeStyleCustom)
-        return 17.0;
-    return orig;
-}
 @end

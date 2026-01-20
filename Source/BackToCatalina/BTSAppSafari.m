@@ -118,6 +118,22 @@ hook(CombinedSidebarTabGroupToolbarButton)
 }
 endhook
 
+
+static NSImage *_backgroundPrivateWindowCapLeft(void)
+{
+    return [carBundle imageForResource:@"com.apple.Safari.PrivateWindowUnifiedFieldCapLeft"];
+}
+
+static NSImage *_backgroundPrivateWindowCapRight(void)
+{
+    return [carBundle imageForResource:@"com.apple.Safari.PrivateWindowUnifiedFieldCapRight"];
+}
+
+static NSImage *_backgroundPrivateWindowFill(void)
+{
+    return [carBundle imageForResource:@"com.apple.Safari.PrivateWindowUnifiedFieldStretch"];
+}
+
 hook(UnifiedFieldBezelView)
 - (void)_updateBackingMaterial {
 }
@@ -134,10 +150,34 @@ hook(UnifiedFieldBezelView)
     view.drawsBackground = NO;
 }
 
+- (void)_drawDarkPrivateBrowsingBezel
+{
+    NSRect strokeRect = NSInsetRect(((UnifiedFieldBezelView *)self).bounds, 1, 1);
+    strokeRect.size.height = 22;
+    NSRect fillRect = NSInsetRect(strokeRect, 1, 1);
+    NSBezierPath *fillPath = [NSBezierPath bezierPathWithRoundedRect:fillRect xRadius:3.75 yRadius:3.75];
+    [[NSColor colorNamed:@"UnifiedFieldPrivateBrowsingBezelFillColor"] set];
+    [fillPath fill];
+    NSBezierPath *strokePath = [NSBezierPath bezierPathWithRoundedRect:strokeRect xRadius:3.75 yRadius:3.75];
+    [strokePath setClip];
+    strokePath.lineWidth = 2;
+    [[NSColor colorNamed:@"UnifiedFieldPrivateBrowsingBezelStrokeColor"] set];
+    [strokePath stroke];
+}
+
 - (void)drawRect:(NSRect)rect {
     UnifiedFieldBezelView *view = (UnifiedFieldBezelView *)self;
     NSRect bounds = view.bounds;
-    [view.cell drawWithFrame:bounds inView:view];
+    NSUInteger browsingMode = ZKHookIvar(self, NSUInteger, "_browsingMode");
+    if (browsingMode == 1) {
+        if ([[view.effectiveAppearance bestMatchFromAppearancesWithNames:@[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]] isEqualToString:NSAppearanceNameDarkAqua]) {
+            [self _drawDarkPrivateBrowsingBezel];
+        } else {
+            NSDrawThreePartImage(bounds, _backgroundPrivateWindowCapLeft(), _backgroundPrivateWindowFill(), _backgroundPrivateWindowCapRight(), NO, NSCompositingOperationSourceOver, 1.0, view.isFlipped);
+        }
+    } else {
+        [view.cell drawWithFrame:bounds inView:view];
+    }
 }
 endhook
 
