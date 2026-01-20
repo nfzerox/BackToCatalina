@@ -8,9 +8,11 @@ Boolean AlertGlassSolariumEnabledNew() {
 }
 
 __attribute__((constructor)) void InitTweak(void) {
+#if !TARGET_CPU_X86_64
     DobbyHook(DobbySymbolResolver(NULL, "_NSAlertGlassSolariumEnabled"),
               AlertGlassSolariumEnabledNew,
               &AlertGlassSolariumEnabledOld);
+#endif
 }
 
 hook(NSAlert)

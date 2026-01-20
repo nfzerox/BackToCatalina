@@ -1,6 +1,6 @@
 # BackToCatalina Beta
 
-Restores macOS Catalina UI on newer versions of macOS. Requires Mac with Apple silicon. Tested on macOS Sequoia. Contributions are welcome!
+Restores macOS Catalina UI on newer versions of macOS. Tested on macOS Sequoia. Featured on [MacGeneration](https://www.macg.co/macos/2026/01/backtocatalina-propose-de-revenir-linterface-de-macos-1015-sur-les-mac-recents-306269). Contributions are welcome!
 
 ![BackToCatalina](Source/Screenshots/Screenshot.png)
 
@@ -23,7 +23,7 @@ sudo defaults delete /Library/Preferences/FeatureFlags/Domain/SwiftUI.plist
 ```
 
 ## Contributing to BackToCatalina Beta
-If you're a developer, it's easy to make contributions. To get started, clone this repo and build BackToCatalina in Xcode. This automatically generates an updated `BackToCatalina.pkg` installer at the project directory which you can install and test.
+If you're a developer, it's easy to make contributions. To get started, clone this repo and build BackToCatalina in Xcode. This automatically generates an updated `BackToCatalina.pkg` installer at the project directory which you can install and test. To build a universal installer for Apple silicon and Intel, change the destination from "My Mac" to "Any Mac".
 
 To iterate changes and fixes more quickly, choose Product > Schemes > Edit Scheme > Run, and change the Build Configuration from Release to Debug. Then open Terminal and run:
 ```

@@ -59,6 +59,7 @@ WEAK_IMPORT_ATTRIBUTE
     carBundle = [NSBundle bundleWithPath:@"/private/var/ammonia/core/tweaks/libBackToCatalina/SystemAppearance.bundle"];
     isTahoeOrLater = [NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:tahoeVersion];
 
+#if !TARGET_CPU_X86_64
     DobbyHook(DobbySymbolResolver("AppKit", "_NSSidebarUsesGoldenMetrics"),
               SidebarGoldenMetricsNew,
               &SidebarGoldenMetricsOld);
@@ -74,11 +75,14 @@ WEAK_IMPORT_ATTRIBUTE
     DobbyHook(DobbySymbolResolver("AppKit", "_NSToolbarItemViewerSupportsSelectionRolloverDefaultValueFunction"),
               SelectionRolloverNew,
               &SelectionRolloverOld);
+#endif
 
     if([[NSBundle mainBundle] principalClass] || [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSPrincipalClass"]){
+#if !TARGET_CPU_X86_64
         DobbyHook(DobbySymbolResolver(NULL, "_CFExecutableLinkedOnOrAfter"),
                   _CFExecutableLinkedOnOrAfterNew,
                   &_CFExecutableLinkedOnOrAfterOld);
+#endif
         ZKSwizzle(windowHookMin, NSWindow);
     }
     else {
