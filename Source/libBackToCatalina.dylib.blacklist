@@ -211,3 +211,4 @@ com.apple.WebKit.GPU
 com.apple.dock.extra
 TextInputMenuAgent
 nsattributedstringagent
+OSDUIHelper
