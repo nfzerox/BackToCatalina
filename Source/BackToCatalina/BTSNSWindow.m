@@ -17,6 +17,10 @@ hook(NSWindow)
     return _orig(id, contentRect, style, backingStoreType, flag);
 }
 
+- (NSUInteger)sheetBehavior {
+    return 3;
+}
+
 - (id)_sidebarTrackingAdapter {
     return nil;
 }

@@ -7,23 +7,6 @@
 NSBundle* carBundle;
 BOOL isTahoeOrLater;
 
-Boolean (*_CFExecutableLinkedOnOrAfterOld)(signed long long version);
-
-Boolean _CFExecutableLinkedOnOrAfterNew(signed long long version) {
-    return (version < 16);
-}
-
-
-Boolean (*SidebarGoldenMetricsOld)(void);
-Boolean SidebarGoldenMetricsNew(void) {
-    return false;
-}
-
-Boolean (*TableViewGoldenStylesOld)(void);
-Boolean TableViewGoldenStylesNew(void) {
-    return false;
-}
-
 Boolean (*CompatWidgetOld)(void);
 Boolean CompatWidgetNew(void) {
     return true;
@@ -46,8 +29,6 @@ WEAK_IMPORT_ATTRIBUTE
 @interface load : NSObject @end
 @interface tbHook: NSTrackingSeparatorToolbarItem @end
 @interface splitViewHook : NSSplitViewItem @end
-@interface windowHook : NSWindow @end
-@interface windowHookMin : NSWindow @end
 @interface fontHook : NSFont @end
 @interface notificationHook : NSUserNotification @end
 @interface notificationHook2 : UNNotificationSound @end
@@ -60,14 +41,6 @@ WEAK_IMPORT_ATTRIBUTE
     isTahoeOrLater = [NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:tahoeVersion];
 
 #if !TARGET_CPU_X86_64
-    DobbyHook(DobbySymbolResolver("AppKit", "_NSSidebarUsesGoldenMetrics"),
-              SidebarGoldenMetricsNew,
-              &SidebarGoldenMetricsOld);
-    
-    DobbyHook(DobbySymbolResolver("AppKit", "_NSTableViewCanUseGoldenStyles"),
-              TableViewGoldenStylesNew,
-              &TableViewGoldenStylesOld);
-    
     DobbyHook(DobbySymbolResolver("AppKit", "_NSToolbarItemViewerCompatabilitySelectionWidgetDefaultValueFunction"),
               CompatWidgetNew,
               &CompatWidgetOld);
@@ -77,17 +50,6 @@ WEAK_IMPORT_ATTRIBUTE
               &SelectionRolloverOld);
 #endif
 
-    if([[NSBundle mainBundle] principalClass] || [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSPrincipalClass"]){
-#if !TARGET_CPU_X86_64
-        DobbyHook(DobbySymbolResolver(NULL, "_CFExecutableLinkedOnOrAfter"),
-                  _CFExecutableLinkedOnOrAfterNew,
-                  &_CFExecutableLinkedOnOrAfterOld);
-#endif
-        ZKSwizzle(windowHookMin, NSWindow);
-    }
-    else {
-        ZKSwizzle(windowHook, NSWindow);
-    }
     if (!isTahoeOrLater) {
         ZKSwizzle(themeHook, NSThemeFrame);
     }
@@ -96,33 +58,6 @@ WEAK_IMPORT_ATTRIBUTE
     ZKSwizzle(notificationHook, _NSConcreteUserNotification);
     ZKSwizzle(notificationHook2, UNNotificationSound);
     ZKSwizzle(splitViewHook, NSSplitViewItem);
-}
-
-@end
-
-@implementation windowHook
-
-- (NSWindowToolbarStyle)toolbarStyle {
-    if ([self titleVisibility] == NSWindowTitleVisible)
-        return NSWindowToolbarStyleExpanded;
-    else
-        return NSWindowToolbarStyleUnifiedCompact;
-}
-
-- (NSUInteger)sheetBehavior {
-    return 3;
-}
-
-@end
-
-@implementation windowHookMin
-
--(void)setToolbarStyle:(NSWindowToolbarStyle)toolbarStyle {
-    return;
-}
-
-- (NSUInteger)sheetBehavior {
-    return 3;
 }
 
 @end

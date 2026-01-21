@@ -1,3 +1,4 @@
+#import "BackToCatalina.h"
 #import <Cocoa/Cocoa.h>
 #import "BackToCatalina.h"
 #import "ZKSwizzle.h"
@@ -195,6 +196,29 @@ static const NSDictionary *appSymbolMaps = @{
         @"burn": @"/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/SidebarBurnFolder.icns", // Conflicts with toolbar
 #endif
     },
+    @"com.apple.Music": @{
+        @"home": @"com.apple.Music.sidebar_ForYouMedium_Normal",
+        @"square.grid.2x2": @"com.apple.Music.sidebar_BrowseMedium_Normal",
+        @"dot.radiowaves.left.and.right": @"com.apple.Music.sidebar_RadioMedium_Normal",
+        @"clock": @"com.apple.Music.sidebar_RecentlyAddedMedium_Normal",
+        @"music.mic": @"com.apple.Music.sidebar_ArtistsMedium_Normal",
+        @"square.stack": @"com.apple.Music.sidebar_AlbumsMedium_Normal",
+        @"music.note": @"com.apple.Music.sidebar_SongsMedium_Normal",
+        @"guitars": @"com.apple.Music.sidebar_GenresMedium_Normal",
+        @"music.quarternote.3": @"com.apple.Music.sidebar_ComposersMedium_Normal",
+        @"tv.music.note": @"com.apple.Music.sidebar_MusicVideosMedium_Normal",
+        @"tv": @"com.apple.Music.sidebar_TVandMoviesMedium_Normal",
+        @"person.crop.square": @"com.apple.Music.sidebar_ForYouMedium_Normal",
+#if 0
+        @"star": @"com.apple.Music.sidebar_iTunesStoreMedium_Normal",
+        @"square.grid.3x3": @"com.apple.Music.sidebar_SmartPlaylistMedium_Normal",
+        @"gearshape": @"com.apple.Music.sidebar_SmartPlaylistMedium_Normal", // Dark
+        @"music.note.list": @"com.apple.Music.sidebar_PlaylistMedium_onLight_Normal",
+        @"folder": @"com.apple.Music.sidebar_FolderMedium_Normal", // Dark
+        @"opticaldisc": @"com.apple.Music.sidebar_CDMedium_Normal", // Dark
+        @"person.2": @"com.apple.Music.sidebar_CompilationsMedium_Normal", // Dark
+#endif
+    }
 };
 
 hook(NSImage)
@@ -213,14 +237,18 @@ hook(NSImage)
 #endif
     NSString *bundleIdentifier = NSBundle.mainBundle.bundleIdentifier;
     NSDictionary *symbolMap = appSymbolMaps[bundleIdentifier];
+    BOOL isFinder = [bundleIdentifier isEqualToString:@"com.apple.finder"];
+    BOOL isMusic = [bundleIdentifier isEqualToString:@"com.apple.Music"];
     if (symbolMap) {
         NSString *assetName = symbolMap[symbolName];
         if (assetName.length) {
             // For iWork apps only for now. This depends on the asset still being present in the current app bundle.
             NSImage *image;
-            if ([assetName hasPrefix:@"/"]) {
+            if (isFinder) {
                 image = [[NSImage alloc] initWithContentsOfFile:assetName];
                 image.template = YES;
+            } else if (isMusic) {
+                image = [carBundle imageForResource:assetName];
             } else {
                 image = [NSBundle.mainBundle imageForResource:assetName];
             }
