@@ -1,6 +1,6 @@
 # BackToCatalina Beta
 
-Restores macOS Catalina UI on newer versions of macOS. Tested on macOS Sequoia. Featured on [MacGeneration](https://www.macg.co/macos/2026/01/backtocatalina-propose-de-revenir-linterface-de-macos-1015-sur-les-mac-recents-306269). Contributions are welcome!
+Restores macOS Catalina UI on newer versions of macOS. Works on both Apple silicon and Intel running macOS Tahoe, macOS Sequoia, macOS Sonoma, and macOS Ventura. Support for macOS Tahoe is heavily experimental. Featured on [MacGeneration](https://www.macg.co/macos/2026/01/backtocatalina-propose-de-revenir-linterface-de-macos-1015-sur-les-mac-recents-306269). Contributions are welcome!
 
 ![BackToCatalina](Source/Screenshots/Screenshot.png)
 
@@ -10,7 +10,7 @@ Restores macOS Catalina UI on newer versions of macOS. Tested on macOS Sequoia. 
 1. Install [ammonia](https://github.com/CoreBedtime/ammonia?tab=readme-ov-file#quick-install)
 1. Install [BackToCatalina.pkg](https://raw.githubusercontent.com/nfzerox/BackToCatalina/refs/heads/main/BackToCatalina.pkg) and reboot
 
-Support for macOS Tahoe is heavily experimental. If possible, use BackToCatalina on macOS Sequoia or earlier for the moment.
+Installing BackToCatalina Beta on macOS Tahoe causes Dock, Control Center, and Notification Center to appear without any background material. To fix this, install [launchbad-revived](https://github.com/nfzerox/launchbad-revived).
 
 If an app has compatility issue with BackToCatalina, add the executable name to the end of `/private/var/ammonia/core/tweaks/libBackToCatalina.dylib.blacklist`
 

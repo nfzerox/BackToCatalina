@@ -161,7 +161,6 @@ lsd
 csnameddatad
 secd
 mdbulkimport
-mdbulkimport
 pkd
 trustd
 containermanagerd
@@ -193,18 +192,9 @@ com.apple.hiservices-xpcservice
 talagent
 Firefox
 WeChat
-Shortcuts
 ControlCenter
 Dock
 Magnifier
-Final Cut Pro
-Motion
-Compressor
-Logic Pro
-MainStage
-Pixelmator Pro
-iMovie
-GarageBand
 Spotlight
 com.apple.WebKit.WebContent
 com.apple.WebKit.GPU

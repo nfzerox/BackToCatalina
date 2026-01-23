@@ -189,3 +189,14 @@ hook(UnifiedFieldButtonMetrics)
     return self;
 }
 endhook
+
+hook(ToolbarDownloadsButton)
+- (void)layout {
+    _orig(void);
+    NSView *progressBar = ZKHookIvar(self, NSView *, "_progressBar");
+    NSRect frame = progressBar.frame;
+    frame.origin.y = frame.origin.y - 5;
+    progressBar.frame = frame;
+
+}
+endhook

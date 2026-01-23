@@ -1,3 +1,7 @@
+/* Dobby has a crashing bug on Intel where OSMemory::Allocate triggers a SIGKILL.
+ If building Dobby from source, you must apply dobby_patch.diff first.
+ libdobby.a used in this project already contains this fix.
+ */
 #ifndef dobby_h
 #define dobby_h
 

@@ -233,23 +233,9 @@ hook(NSAppearance)
     composite.name = @"NSAppearanceNameDarkAqua";
     return composite;
 }
-
-- (BOOL)_isBuiltinAppearance {
-    return NO;
-}
-endhook
-
-hook(NSBuiltinAppearance)
-- (BOOL)_isBuiltinAppearance {
-    return NO;
-}
 endhook
 
 hook(NSCompositeAppearance)
-- (BOOL)_isBuiltinAppearance {
-    return NO;
-}
-
 - (BOOL)_usesMetricsAppearance {
     return NO;
 }

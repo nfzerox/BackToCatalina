@@ -1,0 +1,28 @@
+From cdbc07f97e2bbdf3c9f03f3d56fa012c1b061064 Mon Sep 17 00:00:00 2001
+From: nfzerox <nfzerox@protonmail.com>
+Date: Fri, 23 Jan 2026 01:14:09 -0500
+Subject: [PATCH] Fix crash on Intel
+
+---
+ source/Backend/UserMode/UnifiedInterface/platform-posix.cc | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/source/Backend/UserMode/UnifiedInterface/platform-posix.cc b/source/Backend/UserMode/UnifiedInterface/platform-posix.cc
+index caf1149..1cd8155 100644
+--- a/source/Backend/UserMode/UnifiedInterface/platform-posix.cc
++++ b/source/Backend/UserMode/UnifiedInterface/platform-posix.cc
+@@ -133,7 +133,11 @@ void *OSMemory::Allocate(size_t size, MemoryPermission access, void *fixed_addre
+ 
+   int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+   if (fixed_address != nullptr) {
++#if defined(__arm64__) || defined(__aarch64__)
++    // On Intel, setting MAP_FIXED crashes the app. Limit this to arm64.
++    // https://github.com/jmpews/Dobby/issues/169
+     flags = flags | MAP_FIXED;
++#endif
+   }
+   void *result = mmap(fixed_address, size, prot, flags, kMmapFd, kMmapFdOffset);
+   if (result == MAP_FAILED)
+-- 
+2.46.0
+
