@@ -4,7 +4,7 @@
 #import "ZKSwizzle.h"
 
 static const NSDictionary *appSymbolMaps = @{
-    @"com.apple.iWork.Keynote" :@{
+    @"com.apple.Keynote" :@{
         @"sidebar.leading": @"sf_tb_view",
         @"plus.rectangle": @"sf_tb_insert_addslide",
 #if 0
@@ -15,6 +15,7 @@ static const NSDictionary *appSymbolMaps = @{
         @"textbox": @"sf_tb_insert_text",
         @"square.on.circle": @"sf_tb_insert_shape",
         @"photo": @"sf_tb_insert_media",
+        @"paperclip": @"sf_tb_insert_media",
         @"text.bubble": @"sf_tb_insert_comment",
         @"paintbrush": @"sf_tb_inspector_format-N",
         @"sf_tb_inspector_animation": @"sf_tb_inspector_animation-N",
@@ -40,6 +41,7 @@ static const NSDictionary *appSymbolMaps = @{
         @"textformat.superscript": @"sf_tb_text_superscript",
         @"textformat.subscript": @"sf_tb_text_subscript",
         @"sf_tb_text_outdent": @"sf_tb_text_outdent_legacy",
+        @"decrease.indent": @"sf_tb_text_outdent_legacy",
         @"increase.indent": @"sf_tb_text_indent",
         @"sf_tb_style_connect": @"sf_tb_style_connect_legacy",
         @"sf_tb_style_copy": @"sf_tb_style_copy_legacy",
@@ -59,7 +61,7 @@ static const NSDictionary *appSymbolMaps = @{
 #endif
         @"printer": @"sf_tb_misc_print",
     },
-    @"com.apple.iWork.Numbers" :@{
+    @"com.apple.Numbers" :@{
         @"sidebar.leading": @"sf_tb_view",
         @"list.triangle": @"sf_tb_categories",
         @"sf_tb_icon_funcinsert": @"sf_tb_icon_funcinsert_legacy",
@@ -68,6 +70,7 @@ static const NSDictionary *appSymbolMaps = @{
         @"textbox": @"sf_tb_insert_text",
         @"square.on.circle": @"sf_tb_insert_shape",
         @"photo": @"sf_tb_insert_media",
+        @"paperclip": @"sf_tb_insert_media",
         @"text.bubble": @"sf_tb_insert_comment",
         @"paintbrush": @"sf_tb_inspector_format-N",
         @"line.horizontal.3.decrease.circle": @"sf_tb_inspector_organize_off-N",
@@ -83,6 +86,7 @@ static const NSDictionary *appSymbolMaps = @{
         @"sf_tb_text_smallertext": @"sf_tb_text_smallertext_legacy",
         @"textformat.superscript": @"sf_tb_text_superscript",
         @"textformat.subscript": @"sf_tb_text_subscript",
+        @"decrease.indent": @"sf_tb_text_outdent_legacy",
         @"sf_tb_text_outdent": @"sf_tb_text_outdent_legacy",
         @"increase.indent": @"sf_tb_text_indent",
         @"sf_tb_style_copy": @"sf_tb_style_copy_legacy",
@@ -96,7 +100,7 @@ static const NSDictionary *appSymbolMaps = @{
         @"slider.horizontal.3": @"sf_tb_style_adjust",
         @"printer": @"sf_tb_misc_print",
     },
-    @"com.apple.iWork.Pages" :@{
+    @"com.apple.Pages" :@{
         @"sidebar.leading": @"sf_tb_view",
         @"plus.square": @"sf_tb_insert_addpage",
         @"text.badge.plus": @"sf_tb_insert_WP",
@@ -105,6 +109,7 @@ static const NSDictionary *appSymbolMaps = @{
         @"textbox": @"sf_tb_insert_text",
         @"square.on.circle": @"sf_tb_insert_shape",
         @"photo": @"sf_tb_insert_media",
+        @"paperclip": @"sf_tb_insert_media",
         @"text.bubble": @"sf_tb_insert_comment",
         @"paintbrush": @"sf_tb_inspector_format-N",
         @"doc.text.rtl": @"sf_tb_pg_document-N",
@@ -121,6 +126,7 @@ static const NSDictionary *appSymbolMaps = @{
         @"textformat.superscript": @"sf_tb_text_superscript",
         @"textformat.subscript": @"sf_tb_text_subscript",
         @"sf_tb_text_outdent": @"sf_tb_text_outdent_legacy",
+        @"decrease.indent": @"sf_tb_text_outdent_legacy",
         @"increase.indent": @"sf_tb_text_indent",
         @"sf_tb_text_tracking": @"sf_tb_text_tracking_legacy",
         @"sf_tb_style_copy": @"sf_tb_style_copy_legacy",
@@ -221,6 +227,12 @@ static const NSDictionary *appSymbolMaps = @{
     }
 };
 
+static const NSDictionary *appBundleIdentifierMaps = @{
+    @"com.apple.iWork.Keynote": @"com.apple.Keynote",
+    @"com.apple.iWork.Numbers": @"com.apple.Numbers",
+    @"com.apple.iWork.Pages": @"com.apple.Pages",
+};
+
 hook(NSImage)
 + (instancetype)_imageWithSymbolName:(NSString *)symbolName inCatalog:(id)catalog variableValue:(double)variableValue accessibilityDescription:(NSString *)accessibilityDescription createdWithCompatibilityImageName:(BOOL)createdWithCompatibilityImageName {
 #if DEBUG
@@ -236,6 +248,7 @@ hook(NSImage)
     }
 #endif
     NSString *bundleIdentifier = NSBundle.mainBundle.bundleIdentifier;
+    bundleIdentifier = appBundleIdentifierMaps[bundleIdentifier] ?: bundleIdentifier;
     NSDictionary *symbolMap = appSymbolMaps[bundleIdentifier];
     BOOL isFinder = [bundleIdentifier isEqualToString:@"com.apple.finder"];
     BOOL isMusic = [bundleIdentifier isEqualToString:@"com.apple.Music"];

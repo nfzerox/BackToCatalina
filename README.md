@@ -1,6 +1,6 @@
 # BackToCatalina Beta
 
-Restores macOS Catalina UI on newer versions of macOS. Works on both Apple silicon and Intel running macOS Tahoe, macOS Sequoia, macOS Sonoma, and macOS Ventura. Support for macOS Tahoe is heavily experimental. Featured on [MacGeneration](https://www.macg.co/macos/2026/01/backtocatalina-propose-de-revenir-linterface-de-macos-1015-sur-les-mac-recents-306269). Contributions are welcome!
+Restores macOS Catalina UI on newer versions of macOS. Works on both Apple silicon and Intel running macOS Tahoe, macOS Sequoia, macOS Sonoma, and macOS Ventura. Support for macOS Tahoe is heavily experimental. Featured on [MacGeneration](https://www.macg.co/macos/2026/01/backtocatalina-propose-de-revenir-linterface-de-macos-1015-sur-les-mac-recents-306269) and [MacTechNews](https://www.mactechnews.de/news/article/BackToCatalina-Benutzeroberflaeche-von-macOS-10-15-mit-modernen-macOS-Varianten-nutzen-188707.html). Contributions are welcome!
 
 ![BackToCatalina](Source/Screenshots/Screenshot.png)
 
@@ -12,12 +12,18 @@ Restores macOS Catalina UI on newer versions of macOS. Works on both Apple silic
 
 Installing BackToCatalina Beta on macOS Tahoe causes Dock, Control Center, and Notification Center to appear without any background material. To fix this, install [launchbad-revived](https://github.com/nfzerox/launchbad-revived).
 
+To get full-width sidebar selection highlight, open Terminal and run:
+```
+defaults write -g NSSidebarUsesGoldenMetrics -bool false
+```
+
 If an app has compatility issue with BackToCatalina, add the executable name to the end of `/private/var/ammonia/core/tweaks/libBackToCatalina.dylib.blacklist`
 
 ## Uninstalling BackToCatalina Beta
 In Terminal, run the following and reboot:
 ```
 launchctl unsetenv FEATUREFLAGS_DISABLED
+defaults delete -g NSSidebarUsesGoldenMetrics
 sudo rm -rf /private/var/ammonia/core/tweaks/libBackToCatalina*
 sudo defaults delete /Library/Preferences/FeatureFlags/Domain/SwiftUI.plist
 ```
