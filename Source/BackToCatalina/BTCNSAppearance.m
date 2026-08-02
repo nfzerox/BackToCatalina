@@ -5,10 +5,8 @@
 //  Created by ittrgrey on 13/07/2026.
 //
 
-#import <Cocoa/Cocoa.h>
-
-#import "BackToCatalina.h"
-#import "ZKSwizzle.h"
+#include "BackToCatalina.h"
+#include "ZKSwizzle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

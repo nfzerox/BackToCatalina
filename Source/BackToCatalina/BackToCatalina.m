@@ -1,7 +1,7 @@
-#import "BackToCatalina.h"
+#include "BackToCatalina.h"
 
-#import "dobby.h"
-#import "ZKSwizzle.h"
+#include "dobby.h"
+#include "ZKSwizzle.h"
 
 NSBundle* carBundle;
 BOOL isTahoeOrLater;

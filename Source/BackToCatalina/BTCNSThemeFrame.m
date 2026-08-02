@@ -4,8 +4,8 @@
 //
 //  Created by ittrgrey on 08/07/2026.
 //
-#import <Cocoa/Cocoa.h>
-#import "ZKSwizzle.h"
+#include <AppKit/AppKit.h>
+#include "ZKSwizzle.h"
 
 @interface NSThemeFrame : NSView @end
 
@@ -61,5 +61,7 @@ hook(NSThemeFrame)
 -(double)_toolbarTrailingSpace {
     return ZKOrig(double) + 2.0;
 }
+
+// TODO: Investigate minx and maxx titlebarwidgetinset for goldengate position fixing
 
 endhook

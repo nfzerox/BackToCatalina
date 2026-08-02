@@ -1,5 +1,4 @@
-#import <Cocoa/Cocoa.h>
-#import "ZKSwizzle.h"
+#include "ZKSwizzle.h"
 
 hook(NSTableView)
 - (NSInteger)_resolvedSidebarType {

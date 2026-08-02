@@ -1,5 +1,5 @@
-#import "BackToCatalina.h"
-#import "ZKSwizzle.h"
+#include "BackToCatalina.h"
+#include "ZKSwizzle.h"
 
 @interface UnifiedField : NSTextField @end
 

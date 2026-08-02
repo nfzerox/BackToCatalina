@@ -5,7 +5,7 @@
 //  Created by ittrgrey on 22/07/2026.
 //
 
-#include <Cocoa/Cocoa.h>
+#include <AppKit/AppKit.h>
 #include "ZKSwizzle.h"
 
 hook(NSTitlebarAccessoryViewController)

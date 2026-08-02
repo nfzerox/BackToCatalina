@@ -5,9 +5,8 @@
 //  Created by ittrgrey on 08/07/2026.
 //
 
-#import <Cocoa/Cocoa.h>
-#import "ZKSwizzle.h"
-#import <UserNotifications/UserNotifications.h>
+#include "ZKSwizzle.h"
+#include <UserNotifications/UserNotifications.h>
 
 hook(UNNotificationSound)
 

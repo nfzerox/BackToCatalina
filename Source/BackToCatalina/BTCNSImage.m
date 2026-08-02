@@ -1,7 +1,5 @@
-#import "BackToCatalina.h"
-#import <Cocoa/Cocoa.h>
-#import "BackToCatalina.h"
-#import "ZKSwizzle.h"
+#include "BackToCatalina.h"
+#include "ZKSwizzle.h"
 
 static const NSDictionary *appSymbolMaps = @{
     @"com.apple.Keynote" :@{

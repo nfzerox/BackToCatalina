@@ -5,7 +5,7 @@
 //  Created by ittrgrey on 20/07/2026.
 //
 
-#include <Cocoa/Cocoa.h>
+#include <Foundation/Foundation.h>
 #include "ZKSwizzle.h"
 
 hook(CASDFLayer)
@@ -16,3 +16,4 @@ hook(CASDFLayer)
 }
 
 endhook
+

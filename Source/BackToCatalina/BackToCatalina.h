@@ -1,5 +1,5 @@
-#import "CommonDef.h"
-#import <Cocoa/Cocoa.h>
+#include "CommonDef.h"
+#include <AppKit/AppKit.h>
 
 extern NSBundle* carBundle;
 extern BOOL isTahoeOrLater;

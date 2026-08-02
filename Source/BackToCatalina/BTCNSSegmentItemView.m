@@ -1,5 +1,5 @@
-#import <Cocoa/Cocoa.h>
-#import "ZKSwizzle.h"
+#include <AppKit/AppKit.h>
+#include "ZKSwizzle.h"
 
 hook(NSSegmentItemView)
 

@@ -4,8 +4,8 @@
 //
 //  Created by ittrgrey on 08/07/2026.
 //
-#import <Cocoa/Cocoa.h>
-#import "ZKSwizzle.h"
+#include <AppKit/AppKit.h>
+#include "ZKSwizzle.h"
 
 hook(NSTrackingSeparatorToolbarItem)
 

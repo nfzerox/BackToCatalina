@@ -5,8 +5,8 @@
 //  Created by ittrgrey on 10/07/2026.
 //
 
-#import <Cocoa/Cocoa.h>
-#import "ZKSwizzle.h"
+#include "BackToCatalina.h"
+#include "ZKSwizzle.h"
 
 hook(NSTextField)
 
@@ -24,6 +24,8 @@ hook(NSTextField)
 }
 
 - (BOOL)_wantsSeparatedSubviews {
+    if (!isTahoeOrLater) return NO; // The function doesn't exist before Tahoe
+    
     return ZKOrig(BOOL);
 }
 

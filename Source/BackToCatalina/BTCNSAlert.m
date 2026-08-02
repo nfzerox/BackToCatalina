@@ -1,6 +1,6 @@
-#import <Cocoa/Cocoa.h>
-#import "dobby.h"
-#import "ZKSwizzle.h"
+#include <AppKit/AppKit.h>
+#include "dobby.h"
+#include "ZKSwizzle.h"
 
 // Entire section is dedicated to reverting Big Sur-style alert dialogs...
 Boolean (*AlertGlassSolariumEnabledOld)();

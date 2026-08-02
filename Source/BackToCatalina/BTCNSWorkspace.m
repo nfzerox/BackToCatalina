@@ -5,8 +5,8 @@
 //  Created by ittrgrey on 19/07/2026.
 //
 
-#import <Cocoa/Cocoa.h>
-#import "ZKSwizzle.h"
+#include <Foundation/Foundation.h>
+#include "ZKSwizzle.h"
 
 // Stop-gap: Replace glass with reduced motion appearance
 // TODO: Investigate notificationcenter further

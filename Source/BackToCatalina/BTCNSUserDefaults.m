@@ -1,4 +1,4 @@
-#import "ZKSwizzle.h"
+#include "ZKSwizzle.h"
 
 @interface NSObject (BTC)
 @end

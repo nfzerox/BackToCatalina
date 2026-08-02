@@ -5,7 +5,6 @@
 //  Created by ittrgrey on 17/07/2026.
 //
 
-#include <Cocoa/Cocoa.h>
 #include "ZKSwizzle.h"
 
 hook(NSPopUpButtonCell)

@@ -5,8 +5,7 @@
 //  Created by ittrgrey on 07/07/2026.
 //
 
-#import <Cocoa/Cocoa.h>
-#import "ZKSwizzle.h"
+#include "ZKSwizzle.h"
 
 // Further ensure that Solarium characteristics are force-disabled where applicable.
 // For some reason there is a whole NSSolarium class, as well... Not overly sure why, but it seems to control about half of the visual behaviour.
