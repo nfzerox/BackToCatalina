@@ -264,38 +264,14 @@ static BOOL IsSolariumEnabled(void) {
     return NO;
 }
 
-// https://stackoverflow.com/questions/51672124/how-can-dark-mode-be-detected-on-macos-10-14
-BOOL currentAppearanceIsDark(void)
-{
-    NSAppearance* appearance = NSApplication.sharedApplication.effectiveAppearance;
-    NSAppearanceName basicAppearance = [appearance bestMatchFromAppearancesWithNames:@[
-        NSAppearanceNameAqua,
-        NSAppearanceNameDarkAqua
-    ]];
-    
-    return [basicAppearance isEqualToString:NSAppearanceNameDarkAqua];
-}
-
 hook(NSCompositeAppearance)
 
 - (NSAppearance*)_appearanceForVibrantContent {
-    // Control Center and Spotlight are deterministic based on the wallpaper - let them do their own thing
-    // Clock app toolbar is meant to be dark at all times
-    if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.controlcenter"] ||
-        [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.Spotlight"] ||
-        [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.clock"]) return ZKOrig(NSAppearance*);
-    
-    return currentAppearanceIsDark() ? [NSAppearance appearanceNamed:@"NSAppearanceNameVibrantDark"] : [NSAppearance appearanceNamed:@"NSAppearanceNameVibrantLight"];
+    return [[(NSCompositeAppearance*)self name] containsString:@"Dark"] ? [NSAppearance appearanceNamed:@"NSAppearanceNameVibrantDark"] : [NSAppearance appearanceNamed:@"NSAppearanceNameVibrantLight"];
 }
 
 - (NSAppearance*)_appearanceForNonVibrantContent {
-    // Control Center and Spotlight are deterministic based on the wallpaper - let them do their own thing
-    // Clock app toolbar is meant to be dark at all times
-    if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.controlcenter"] ||
-        [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.Spotlight"] ||
-        [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.clock"]) return ZKOrig(NSAppearance*);
-    
-    return currentAppearanceIsDark() ? [NSAppearance appearanceNamed:@"NSAppearanceNameDarkAqua"] : [NSAppearance appearanceNamed:@"NSAppearanceNameAqua"];
+    return [[(NSCompositeAppearance*)self name] containsString:@"Dark"] ? [NSAppearance appearanceNamed:@"NSAppearanceNameDarkAqua"] : [NSAppearance appearanceNamed:@"NSAppearanceNameAqua"];
 }
 
 - (BOOL)_usesMetricsAppearance {

@@ -10,15 +10,6 @@
 
 hook(NSTextField)
 
-// No slop 4 u
-+ (BOOL)allowsWritingTools {
-    return NO;
-}
-
-- (void)setAllowsWritingTools:(BOOL)allowsWritingTools {
-    return ZKOrig(void, NO);
-}
-
 - (BOOL)isBezeled {
     return ZKOrig(BOOL);
 }

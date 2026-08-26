@@ -1,9 +1,32 @@
+#include <AppKit/AppKit.h>
 #include "ZKSwizzle.h"
 
 hook(NSTableView)
+
 - (NSInteger)_resolvedSidebarType {
     return 2;
 }
+
+- (CGSize)intercellSpacing {
+    CGSize orig = ZKOrig(CGSize);
+    
+    if (orig.width == 17 && orig.height == 0) {
+        return CGSizeMake(3, 2);
+    }
+    
+    return orig;
+}
+
+- (CGFloat)rowHeight {
+    CGFloat orig = ZKOrig(CGFloat);
+    
+    if (orig == 24.0 && [(NSTableView*)self rowSizeStyle] == NSTableViewRowSizeStyleCustom) {
+        return 17.0;
+    }
+    
+    return orig;
+}
+
 endhook
 
 hook(NSTableViewStyleData)
@@ -17,10 +40,6 @@ hook(NSTableViewStyleData)
 
 - (double)cornerRadius {
     return 0;
-}
-
-- (double)rowHeight {
-    return MIN(ZKOrig(double), 24);
 }
 
 endhook

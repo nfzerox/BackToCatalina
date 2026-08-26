@@ -13,6 +13,10 @@
         @"NSToolbarSidebarItemUseSymbolImages": @NO,
         @"NSToolbarCloudSharingItemUseSymbolImages": @NO,
         @"NSAlertMetricsGatheringEnabled": @NO, // Only effective on macOS 11 and 12 - see BTCNSAlert.m for macOS 13 and later
+        
+        // Mitigate later Tahoe updates, plus GoldenGate
+        @"NSConvolutionOverride1": @5.0,
+        @"NSConvolutionOverride2": @5.0,
     }];
 }
 

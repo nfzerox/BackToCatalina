@@ -15,6 +15,10 @@ hook(NSTitlebarAccessoryViewController)
     return NO;
 }
 
+- (double)fullScreenMinHeight {
+    return MIN(ZKOrig(double), [[(NSTitlebarAccessoryViewController*)self view] frame].size.height);
+}
+
 endhook
 
 hook(NSTitlebarSeparatorView)
@@ -27,15 +31,22 @@ hook(NSTitlebarSeparatorView)
 
 endhook
 
-hook(NSTabBarViewButton)
+hook(_NSTitlebarDecorationView)
 
-- (BOOL)isOpaque {
-    // Unhide the top border view
-    NSView* topBorderView = ZKHookIvar(self, NSView*, "_topBorderView");
-    topBorderView.hidden = NO;
-    
-    // Return our original value since, well, we don't actually need to change the function output :P
-    return ZKOrig(BOOL);
+// We don't make any changes to the window, we just need it for accessing whether we have a toolbar or not
+- (NSWindow*)window {
+    return ZKOrig(NSWindow*);
+}
+
+// Restore original behaviour - drawn UNLESS the titlebar is transparent
+- (void)setDrawsBottomSeparator:(BOOL)shouldDraw {
+    return ZKOrig(void, ![[self window] titlebarAppearsTransparent]);
+}
+
+// This brings back the old bottom separator - we just have to eliminate the "new" separator style elsewhere, in NSWindow
+- (void)_updateBottomSeparatorLayer {
+    // Just returning here brings it back for most window frame designs...
+    return;
 }
 
 endhook

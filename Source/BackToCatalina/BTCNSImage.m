@@ -269,3 +269,38 @@ hook(NSImage)
     return _orig(id, symbolName, catalog, variableValue, accessibilityDescription, createdWithCompatibilityImageName);
 }
 endhook
+
+hook(NSImageCell)
+
+- (void)_setSidebarTintConfiguration:(NSTintConfiguration*)tintConfiguration {
+    if (tintConfiguration == [NSTintConfiguration defaultTintConfiguration]) {
+        // Restore legacy behaviour for sidebar tinting...
+        tintConfiguration = [NSTintConfiguration monochromeTintConfiguration];
+    }
+    
+    return ZKOrig(void, tintConfiguration);
+}
+
+endhook
+
+hook(NSImageView)
+
+- (void)_setSidebarTintConfiguration:(NSTintConfiguration*)tintConfiguration {
+    if (tintConfiguration == [NSTintConfiguration defaultTintConfiguration]) {
+        // Restore legacy behaviour for sidebar tinting...
+        tintConfiguration = [NSTintConfiguration monochromeTintConfiguration];
+    }
+    
+    return ZKOrig(void, tintConfiguration);
+}
+
+endhook
+
+hook(BMAppleIntelligenceAvailability)
+
+
+- (bool)isAppleIntelligenceToggleEnabled {
+    return NO;
+}
+
+endhook

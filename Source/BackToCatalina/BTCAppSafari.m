@@ -217,3 +217,23 @@ hook(TabBarViewButton)
 }
 
 endhook
+
+// The same type of thing we have for NSTabBar but, obviously, for Safari's custom weird implementation
+hook(TabBarView)
+
+- (CGRect)frame {
+    // The original value to modify...
+    CGRect tabFrame = ZKOrig(CGRect);
+    
+    // The view in Safari is merged and doesn't require the superview override
+    // Why this isn't standardised with the wider OS impl is beyond me and I'm surprised Apple have never taken the time to eliminate this oddity; does Safari really need these custom controls that look exactly the same as the standard ones?
+    // Anyway...
+    
+    // Set intended height (26pt for Catalina, 28pt for Big Sur)
+    tabFrame.size.height = 26;
+    
+    // Return the modified tab frame itself
+    return tabFrame;
+}
+
+endhook
