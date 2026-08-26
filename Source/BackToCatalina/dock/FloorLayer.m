@@ -16,8 +16,10 @@ static void CatalinaDock_LayoutSublayers(CALayer* layer) {
     CALayer* material = ZKHookIvar(layer, CALayer*, "_materialLayer");
     CALayer* innerRim = ZKHookIvar(layer, CALayer*, "_innerRimLayer");
     
-    // On light mode this part doesn't generally render prior to Big Sur
-    innerRim.hidden = ![[[NSAppearance currentDrawingAppearance] name] containsString:@"Dark"];
+    // Avoid AppKit here: Dock cannot safely load it on Ventura and Sonoma.
+    // NSUserDefaults searches the global domain, where macOS stores this value.
+    NSString* interfaceStyle = [[NSUserDefaults standardUserDefaults] stringForKey:@"AppleInterfaceStyle"];
+    innerRim.hidden = ![interfaceStyle isEqualToString:@"Dark"];
     
     CALayer* rim = ZKHookIvar(layer, CALayer*, "_rim");
     
