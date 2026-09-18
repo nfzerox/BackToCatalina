@@ -1,28 +1,352 @@
-From cdbc07f97e2bbdf3c9f03f3d56fa012c1b061064 Mon Sep 17 00:00:00 2001
-From: nfzerox <nfzerox@protonmail.com>
-Date: Fri, 23 Jan 2026 01:14:09 -0500
-Subject: [PATCH] Fix crash on Intel
-
----
- source/Backend/UserMode/UnifiedInterface/platform-posix.cc | 4 ++++
- 1 file changed, 4 insertions(+)
-
+diff --git a/source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntime.cc b/source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntime.cc
+index 6ab5793..b8cf98d 100644
+--- a/source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntime.cc
++++ b/source/Backend/UserMode/PlatformUtil/Darwin/ProcessRuntime.cc
+@@ -36,6 +36,10 @@ static bool memory_region_comparator(MemRegion a, MemRegion b) {
+ stl::vector<MemRegion> *regions;
+ 
+ const stl::vector<MemRegion> &ProcessRuntime::getMemoryLayout() {
++  return getMemoryLayout(0, UINTPTR_MAX, true);
++}
++
++const stl::vector<MemRegion> &ProcessRuntime::getMemoryLayout(addr_t begin, addr_t end, bool recursive) {
+   if (regions == nullptr) {
+     regions = new stl::vector<MemRegion>();
+   }
+@@ -44,10 +48,12 @@ const stl::vector<MemRegion> &ProcessRuntime::getMemoryLayout() {
+ 
+   vm_region_submap_info_64 region_submap_info;
+   mach_msg_type_number_t count = VM_REGION_SUBMAP_INFO_COUNT_64;
+-  mach_vm_address_t addr = 0;
++  mach_vm_address_t addr = begin;
+   mach_vm_size_t size = 0;
+   natural_t depth = 0;
+   while (true) {
++    if (addr >= end)
++      break;
+     count = VM_REGION_SUBMAP_INFO_COUNT_64;
+     kern_return_t kr = mach_vm_region_recurse(mach_task_self(), (mach_vm_address_t *)&addr, (mach_vm_size_t *)&size,
+                                               &depth, (vm_region_recurse_info_t)&region_submap_info, &count);
+@@ -59,8 +65,13 @@ const stl::vector<MemRegion> &ProcessRuntime::getMemoryLayout() {
+       }
+     }
+ 
+-    if (region_submap_info.is_submap) {
++    if (addr >= end)
++      break;
++    if (region_submap_info.is_submap && recursive) {
+       depth++;
++
++      if (addr < begin)
++        addr = begin;
+     } else {
+       MemoryPermission perm = kNoAccess;
+       auto prot = region_submap_info.protection;
+@@ -77,6 +88,8 @@ const stl::vector<MemRegion> &ProcessRuntime::getMemoryLayout() {
+ 
+       MemRegion region = MemRegion(addr, size, perm);
+       regions->push_back(region);
++      if (!size || addr + size <= addr)
++        break;
+       addr += size;
+     }
+   }
 diff --git a/source/Backend/UserMode/UnifiedInterface/platform-posix.cc b/source/Backend/UserMode/UnifiedInterface/platform-posix.cc
-index caf1149..1cd8155 100644
+index caf1149..b73e8f6 100644
 --- a/source/Backend/UserMode/UnifiedInterface/platform-posix.cc
 +++ b/source/Backend/UserMode/UnifiedInterface/platform-posix.cc
-@@ -133,7 +133,11 @@ void *OSMemory::Allocate(size_t size, MemoryPermission access, void *fixed_addre
+@@ -133,7 +133,12 @@ void *OSMemory::Allocate(size_t size, MemoryPermission access, void *fixed_addre
  
    int flags = MAP_PRIVATE | MAP_ANONYMOUS;
    if (fixed_address != nullptr) {
-+#if defined(__arm64__) || defined(__aarch64__)
-+    // On Intel, setting MAP_FIXED crashes the app. Limit this to arm64.
-+    // https://github.com/jmpews/Dobby/issues/169
++#if !defined(__APPLE__) && (defined(__arm64__) || defined(__aarch64__))
++
++
++
      flags = flags | MAP_FIXED;
 +#endif
    }
    void *result = mmap(fixed_address, size, prot, flags, kMmapFd, kMmapFdOffset);
    if (result == MAP_FAILED)
--- 
-2.46.0
-
+diff --git a/source/InstructionRelocation/x86/InstructionRelocationX86Shared.cc b/source/InstructionRelocation/x86/InstructionRelocationX86Shared.cc
+index b6bb6a5..d86a471 100644
+--- a/source/InstructionRelocation/x86/InstructionRelocationX86Shared.cc
++++ b/source/InstructionRelocation/x86/InstructionRelocationX86Shared.cc
+@@ -51,7 +51,7 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
+   auto x86_insn_encode_begin = [&] { x86_insn_encode_start = code_buffer->buffer_size; };
+   auto x86_insn_encode_end = [&] { x86_insn_encoded_len = code_buffer->buffer_size - x86_insn_encode_start; };
+ 
+-  if (insn.primary_opcode >= 0x70 && insn.primary_opcode <= 0x7F) { // jcc rel8
++  if (insn.opcode_map == 1 && insn.primary_opcode >= 0x70 && insn.primary_opcode <= 0x7F) { // jcc rel8
+     DEBUG_LOG("[x86 relo] %p: jc rel8", buffer_cursor);
+ 
+     int8_t offset = insn.immediate;
+@@ -125,7 +125,7 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
+       DobbyCodePatch((void *)rip_insn_seq_addr, rip_insn_seq_buffer.buffer, rip_insn_seq_buffer.buffer_size);
+     }
+ 
+-  } else if (insn.primary_opcode == 0xEB) { // jmp rel8
++  } else if (insn.opcode_map == 1 && insn.primary_opcode == 0xEB) { // jmp rel8
+     DEBUG_LOG("[x86 relo] %p: jmp rel8", buffer_cursor);
+ 
+     int8_t offset = insn.immediate;
+@@ -139,7 +139,7 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
+     // jmp *(rip)
+     codegen_x64_jmp_absolute_addr(code_buffer, orig_dst_ip);
+ #endif
+-  } else if (insn.primary_opcode == 0xE8 || insn.primary_opcode == 0xE9) { // call or jmp rel32
++  } else if (insn.opcode_map == 1 && (insn.primary_opcode == 0xE8 || insn.primary_opcode == 0xE9)) { // call or jmp rel32
+     DEBUG_LOG("[x86 relo] %p:jmp or call rel32", buffer_cursor);
+ 
+     int32_t offset = insn.immediate;
+@@ -174,10 +174,10 @@ int GenRelocateSingleX86Insn(addr_t curr_orig_ip, addr_t curr_relo_ip, uint8_t *
+       __ Emit<int64_t>(orig_dst_ip);
+     }
+ #endif
+-  } else if (insn.primary_opcode >= 0xE0 && insn.primary_opcode <= 0xE2) { // LOOPNZ/LOOPZ/LOOP/JECXZ
++  } else if (insn.opcode_map == 1 && insn.primary_opcode >= 0xE0 && insn.primary_opcode <= 0xE2) { // LOOPNZ/LOOPZ/LOOP/JECXZ
+     // LOOP/LOOPcc
+     UNIMPLEMENTED();
+-  } else if (insn.primary_opcode == 0xE3) {
++  } else if (insn.opcode_map == 1 && insn.primary_opcode == 0xE3) {
+     // JCXZ JCEXZ JCRXZ
+     UNIMPLEMENTED();
+   } else {
+diff --git a/source/InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.c b/source/InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.c
+index 5b8fc32..4e51a10 100644
+--- a/source/InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.c
++++ b/source/InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.c
+@@ -438,16 +438,27 @@ static void x86_insn_decode_opcode(x86_insn_reader_t *rd, x86_insn_decode_t *ins
+   uint8_t opcode = read_byte(rd);
+ 
+   x86_insn_spec_t insn_spec;
++  insn->opcode_map = 1;
+   if (opcode == 0x0f) {
++    insn->opcode_map = 2;
+     opcode = read_byte(rd);
+     insn_spec = x86_opcode_map_two_byte[opcode];
+   } else {
+     insn_spec = x86_opcode_map_one_byte[opcode];
+   }
+ 
+-  // check sse group
++
++
++
+   if (X86_INSN_FLAG_GET_GROUP(insn_spec.flags) > X86_INSN_SSE_GROUP_START) {
+-    UNIMPLEMENTED();
++    int group = X86_INSN_FLAG_GET_GROUP(insn_spec.flags);
++    int index = opcode & 7;
++    if (insn->prefix & INSN_PREFIX_REPE)
++      insn_spec = x86_insn_sse_groups_repz[group].insns[index];
++    else if (insn->prefix & INSN_PREFIX_REPNE)
++      insn_spec = x86_insn_sse_groups_repnz[group].insns[index];
++    else if (insn->prefix & INSN_PREFIX_OPERAND_SIZE)
++      insn_spec = x86_insn_sse_groups_operand_size[group].insns[index];
+   }
+ 
+   if (X86_INSN_FLAG_GET_GROUP(insn_spec.flags) > X86_INSN_GROUP_START &&
+@@ -561,4 +572,4 @@ void x86_insn_decode(x86_insn_decode_t *insn, uint8_t *buffer, x86_options_t *co
+   insn->length = rd.buffer_cursor - rd.buffer;
+ }
+ 
+-#endif
+\ No newline at end of file
++#endif
+diff --git a/source/InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.h b/source/InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.h
+index 57ec949..bc8822e 100644
+--- a/source/InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.h
++++ b/source/InstructionRelocation/x86/x86_insn_decode/x86_insn_decode.h
+@@ -172,6 +172,8 @@ typedef struct x86_insn_decode_t {
+ 
+     // insn primary opcode
+     uint8_t primary_opcode;
++
++    uint8_t opcode_map;
+ 
+     // insn modrm
+     x86_insn_modrm_t modrm;
+@@ -199,4 +201,4 @@ void x86_insn_decode(x86_insn_decode_t *insn, uint8_t *buffer, x86_options_t *co
+ 
+ #ifdef __cplusplus
+ }
+-#endif
+\ No newline at end of file
++#endif
+diff --git a/source/InterceptRouting/InlineHookRouting.h b/source/InterceptRouting/InlineHookRouting.h
+index 55cd20a..f0b451b 100644
+--- a/source/InterceptRouting/InlineHookRouting.h
++++ b/source/InterceptRouting/InlineHookRouting.h
+@@ -61,8 +61,8 @@ PUBLIC inline int DobbyHook(void *address, void *fake_func, void **out_origin_fu
+ 
+   if (out_origin_func) {
+     *out_origin_func = (void *)entry->relocated.addr();
++    features::apple::arm64e_pac_strip_and_sign(*out_origin_func);
+   }
+-  features::apple::arm64e_pac_strip_and_sign(*out_origin_func);
+ 
+   gInterceptor.add(entry);
+ 
+diff --git a/source/InterceptRouting/InterceptRouting.h b/source/InterceptRouting/InterceptRouting.h
+index fd94884..027f216 100644
+--- a/source/InterceptRouting/InterceptRouting.h
++++ b/source/InterceptRouting/InterceptRouting.h
+@@ -45,17 +45,21 @@ struct InterceptRouting {
+   addr_t trampoline_addr() {
+     if (near_trampoline)
+       return near_trampoline->addr();
+-    return trampoline->addr();
++    return trampoline ? trampoline->addr() : 0;
+   }
+ 
+   size_t trampoline_size() {
+     if (near_trampoline)
+       return near_trampoline->size();
+-    return trampoline->size();
++    return trampoline ? trampoline->size() : 0;
+   }
+ 
+   virtual void Active() {
+     __FUNC_CALL_TRACE__();
++    if (error || !trampoline_addr() || !trampoline_size()) {
++      error = 1;
++      return;
++    }
+     auto ret = DobbyCodePatch((void *)entry->addr, (uint8_t *)trampoline_addr(), trampoline_size());
+     error |= (ret != 0);
+   }
+@@ -87,6 +91,7 @@ struct InterceptRouting {
+     if (trampoline_addr() == 0) {
+       ERROR_LOG("GenerateTrampoline must be called first");
+       error = 1;
++      return;
+     }
+ 
+     auto code_addr = entry->addr;
+@@ -110,6 +115,7 @@ struct InterceptRouting {
+ 
+   void BackupOriginCode() {
+     __FUNC_CALL_TRACE__();
++    if (error) return;
+     entry->backup_orig_code();
+   }
+ };
+diff --git a/source/MemoryAllocator/NearMemoryAllocator.h b/source/MemoryAllocator/NearMemoryAllocator.h
+index bb58cb5..4368e3f 100644
+--- a/source/MemoryAllocator/NearMemoryAllocator.h
++++ b/source/MemoryAllocator/NearMemoryAllocator.h
+@@ -83,28 +83,42 @@ struct NearMemoryAllocator {
+     }
+ 
+     // step-2: search from unused page between regions
++#if defined(__APPLE__)
++
++
++
++    auto regions = ProcessRuntime::getMemoryLayout(search_range.addr(), search_range.end(), is_exec);
++#else
+     auto regions = ProcessRuntime::getMemoryLayout();
+-    for (int i = 0; i < regions.size(); ++i) {
+-      auto *region = &regions[i];
+-      auto *prev_region = i > 0 ? &regions[i - 1] : nullptr;
+-      auto *next_region = i < regions.size() - 1 ? &regions[i + 1] : nullptr;
+-      if (!next_region)
+-        break;
+-
+-      auto unused_region_start = region->end();
+-      auto unused_region_size = next_region->addr() - region->end();
++#endif
++
++
++
++    for (size_t i = 0; i <= regions.size(); ++i) {
++      auto unused_region_start = i ? regions[i - 1].end() : search_range.addr();
++      auto unused_region_end = i < regions.size() ? regions[i].addr() : search_range.end();
++      if (unused_region_end <= unused_region_start)
++        continue;
++      auto unused_region_size = unused_region_end - unused_region_start;
+       MemRegion unused_region(unused_region_start, unused_region_size, kNoAccess);
+       auto intersect = search_range.intersect(unused_region);
+       if (intersect.size < in_size)
+         continue;
+ 
+-      auto unused_page = (void *)ALIGN_FLOOR(intersect.addr(), OSMemory::PageSize());
++      auto unused_page = (void *)ALIGN_CEIL(intersect.addr(), OSMemory::PageSize());
++      if ((addr_t)unused_page >= intersect.end() ||
++          intersect.end() - (addr_t)unused_page < OSMemory::PageSize())
++        continue;
+       {
+         auto page = OSMemory::Allocate(OSMemory::PageSize(), kNoAccess, unused_page);
+         if (page != unused_page) {
+-          FATAL_LOG("allocate unused page failed");
++          if (page) OSMemory::Free(page, OSMemory::PageSize());
++          continue;
++        }
++        if (!OSMemory::SetPermission(unused_page, OSMemory::PageSize(), is_exec ? kReadExecute : kReadWrite)) {
++          OSMemory::Free(unused_page, OSMemory::PageSize());
++          continue;
+         }
+-        OSMemory::SetPermission(unused_page, OSMemory::PageSize(), is_exec ? kReadExecute : kReadWrite);
+         DEBUG_LOG("step-2 unused page: %p", unused_page);
+         auto page_allocator = new simple_linear_allocator_t((uint8_t *)unused_page, OSMemory::PageSize());
+         if (is_exec)
+@@ -152,4 +166,4 @@ struct NearMemoryAllocator {
+ inline static NearMemoryAllocator gNearMemoryAllocator;
+ NearMemoryAllocator *NearMemoryAllocator::Shared() {
+   return &gNearMemoryAllocator;
+-}
+\ No newline at end of file
++}
+diff --git a/source/PlatformUtil/ProcessRuntime.h b/source/PlatformUtil/ProcessRuntime.h
+index 1650cad..00402a3 100644
+--- a/source/PlatformUtil/ProcessRuntime.h
++++ b/source/PlatformUtil/ProcessRuntime.h
+@@ -21,8 +21,11 @@ struct MemRegion : MemRange {
+ class ProcessRuntime {
+ public:
+   static const stl::vector<MemRegion> &getMemoryLayout();
++#if defined(__APPLE__)
++  static const stl::vector<MemRegion> &getMemoryLayout(addr_t begin, addr_t end, bool recursive);
++#endif
+ 
+   static const stl::vector<RuntimeModule> &getModuleMap();
+ 
+   static RuntimeModule getModule(const char *name);
+-};
+\ No newline at end of file
++};
+diff --git a/source/TrampolineBridge/Trampoline/trampoline_x64.cc b/source/TrampolineBridge/Trampoline/trampoline_x64.cc
+index 129cae2..569f9b1 100644
+--- a/source/TrampolineBridge/Trampoline/trampoline_x64.cc
++++ b/source/TrampolineBridge/Trampoline/trampoline_x64.cc
+@@ -34,13 +34,17 @@ Trampoline *GenerateNormalTrampolineBuffer(addr_t from, addr_t to) {
+   // allocate forward stub
+   auto jump_near_next_insn_addr = from + 6;
+   addr_t forward_stub = allocate_indirect_stub(jump_near_next_insn_addr);
+-  if (forward_stub == 0)
+-    return nullptr;
+-
+-  *(addr_t *)forward_stub = to;
+-
+   CodeGen codegen(&turbo_assembler_);
+-  codegen.JmpNearIndirect((addr_t)forward_stub);
++  if (forward_stub) {
++    *(addr_t *)forward_stub = to;
++    codegen.JmpNearIndirect(forward_stub);
++  } else {
++
++
++
++    codegen.JmpNearIndirect(jump_near_next_insn_addr);
++    turbo_assembler_.code_buffer()->Emit<int64_t>(to);
++  }
+ 
+   auto tramp_buffer = turbo_assembler_.code_buffer();
+   auto tramp_block = tramp_buffer->dup();
+@@ -55,4 +59,4 @@ Trampoline *GenerateNearTrampolineBuffer(addr_t src, addr_t dst) {
+   return nullptr;
+ }
+ 
+-#endif
+\ No newline at end of file
++#endif

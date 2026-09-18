@@ -1,5 +1,6 @@
 #include <AppKit/AppKit.h>
 #include "ZKSwizzle.h"
+#include "BackToCatalina.h"
 
 @interface NSToolbarItem ()
 - (NSView *)_view;
@@ -62,19 +63,11 @@ hook(NSToolbarItemViewer)
     return NO;
 }
 
-- (CGSize)maxSize {
-    return [[[[(NSView*)self subviews] firstObject] className] isEqualToString:@"NSSeparatorToolbarItemView"] ? CGSizeZero : ZKOrig(CGSize);
-}
-
-- (CGSize)minSize {
-    return [[[[(NSView*)self subviews] firstObject] className] isEqualToString:@"NSSeparatorToolbarItemView"] ? CGSizeZero : ZKOrig(CGSize);
-}
-
 - (BOOL)wantsToBeCentered {
     NSString* bundleIdentifier = NSBundle.mainBundle.bundleIdentifier;
     
     if ((([bundleIdentifier isEqualToString:@"com.apple.Safari"]
-        || [bundleIdentifier isEqualToString:@"com.apple.Photos"])
+        || (isPhotos && isTahoeOrLater))
          && [[[(NSView*)self window] frameAutosaveName] isEqualToString:@"Preferences"]) // These two need extra to ensure correct behaviour in non-prefs windows
         || [bundleIdentifier isEqualToString:@"com.apple.AddressBook"]
         || [bundleIdentifier isEqualToString:@"com.apple.iBooksX"]
@@ -138,7 +131,16 @@ hook(NSToolbarLabel)
 }
 endhook
 
-hook(NSToolbarItem)
+hook(NSToolbarItemViewer, BTCDisableSectionTracking)
+- (CGSize)maxSize {
+    return [[[[(NSView*)self subviews] firstObject] className] isEqualToString:@"NSSeparatorToolbarItemView"] ? CGSizeZero : ZKOrig(CGSize);
+}
+- (CGSize)minSize {
+    return [[[[(NSView*)self subviews] firstObject] className] isEqualToString:@"NSSeparatorToolbarItemView"] ? CGSizeZero : ZKOrig(CGSize);
+}
+endhook
+
+hook(NSToolbarItem, BTCDisableSectionTracking)
 
 - (id)_partitionAdapter {
     return nil;
@@ -146,7 +148,7 @@ hook(NSToolbarItem)
 
 endhook
 
-hook(NSTrackingSeparatorToolbarItem)
+hook(NSTrackingSeparatorToolbarItem, BTCDisableSectionTracking)
 
 - (BOOL)_isPartitionItem {
     return NO;
@@ -154,7 +156,7 @@ hook(NSTrackingSeparatorToolbarItem)
 
 endhook
 
-hook(NSSeparatorToolbarItemView)
+hook(NSSeparatorToolbarItemView, BTCDisableSectionTracking)
 
 - (BOOL)isHidden {
     return YES;

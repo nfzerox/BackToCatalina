@@ -169,9 +169,28 @@ static const NSDictionary *appBundleIdentifierMaps = @{
     @"com.apple.iWork.Pages": @"com.apple.Pages",
 };
 
-hook(NSImage)
+static NSDictionary *selectedAppSymbolMap;
+static BOOL selectedAppUsesStyleBundle;
+
+static void BTCSelectAppSymbolMap(NSString *bundleIdentifier) {
+    bundleIdentifier = appBundleIdentifierMaps[bundleIdentifier] ?: bundleIdentifier;
+    selectedAppSymbolMap = appSymbolMaps[bundleIdentifier];
+    selectedAppUsesStyleBundle = [bundleIdentifier isEqualToString:@"com.apple.Music"];
+}
+
+__attribute__((constructor)) static void BTCInstallAppSymbolHooks(void) {
+    BTCSelectAppSymbolMap(NSBundle.mainBundle.bundleIdentifier);
+    BOOL install = selectedAppSymbolMap != nil;
+#if DEBUG && defined(BTC_TRACE_SYMBOLS)
+    install = YES;
+#endif
+    if (install) ZKSwizzleGroup(BTCAppSymbols);
+}
+
+ZKSwizzleInterfaceGroup(BTCAppSymbolImage, NSImage, NSObject, BTCAppSymbols)
+@implementation BTCAppSymbolImage
 + (instancetype)_imageWithSymbolName:(NSString *)symbolName inCatalog:(id)catalog variableValue:(double)variableValue accessibilityDescription:(NSString *)accessibilityDescription createdWithCompatibilityImageName:(BOOL)createdWithCompatibilityImageName {
-#if DEBUG
+#if DEBUG && defined(BTC_TRACE_SYMBOLS)
     BOOL needsLogging = YES;
     BOOL needsDetailedLogging = NO;
     if (needsLogging || needsDetailedLogging) {
@@ -183,16 +202,12 @@ hook(NSImage)
         }
     }
 #endif
-    NSString *bundleIdentifier = NSBundle.mainBundle.bundleIdentifier;
-    bundleIdentifier = appBundleIdentifierMaps[bundleIdentifier] ?: bundleIdentifier;
-    NSDictionary *symbolMap = appSymbolMaps[bundleIdentifier];
-    BOOL isMusic = [bundleIdentifier isEqualToString:@"com.apple.Music"];
-    if (symbolMap) {
-        NSString *assetName = symbolMap[symbolName];
+    if (selectedAppSymbolMap) {
+        NSString *assetName = selectedAppSymbolMap[symbolName];
         if (assetName.length) {
             // For iWork apps only for now. This depends on the asset still being present in the current app bundle.
             NSImage *image;
-            if (isMusic && carBundle) {
+            if (selectedAppUsesStyleBundle && carBundle) {
                 image = [carBundle imageForResource:assetName];
             } else {
                 image = [NSBundle.mainBundle imageForResource:assetName];

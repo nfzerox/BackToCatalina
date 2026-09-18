@@ -7,7 +7,7 @@
 //
 
 #import "ZKSwizzle.h"
-static NSMutableDictionary *classTable;
+static char sourceDestinationKey;
 
 @interface NSObject (ZKSwizzle)
 + (void)_ZK_unconditionallySwizzle;
@@ -24,30 +24,28 @@ static SEL destinationSelectorForSelector(SEL cmd, Class dst) {
 }
 
 static Class classFromInfo(const char *info) {
-    NSUInteger bracket_index = -1;
-    for (NSUInteger i = 0; i < strlen(info); i++) {
-        if (info[i] == '[') {
-            bracket_index = i;
-            break;
-        }
-    }
-    bracket_index++;
-    
-    if (bracket_index == -1) {
-        [NSException raise:@"Failed to parse info" format:@"Couldn't find swizzle class for info: %s", info];
+    const char *start = info ? strchr(info, '[') : NULL;
+    const char *end = start ? strchr(++start, ' ') : NULL;
+    if (!start || !end || end == start) {
         return NULL;
     }
-    
-    char after_bracket[255];
-    memcpy(after_bracket, &info[bracket_index], strlen(info) - bracket_index - 1);
-    
-    for (NSUInteger i = 0; i < strlen(info); i++) {
-        if (after_bracket[i] == ' ') {
-            after_bracket[i] = '\0';
-        }
-    }
-    
-    return objc_getClass(after_bracket);
+    char *name = strndup(start, (size_t)(end - start));
+    if (!name) return NULL;
+    Class cls = objc_getClass(name);
+    free(name);
+    return cls;
+}
+
+static SEL selectorFromInfo(const char *info, SEL fallback) {
+    const char *start = info ? strchr(info, '[') : NULL;
+    start = start ? strchr(start, ' ') : NULL;
+    const char *end = start ? strchr(++start, ']') : NULL;
+    if (!start || !end || end == start) return fallback;
+    char *name = strndup(start, (size_t)(end - start));
+    if (!name) return fallback;
+    SEL selector = sel_registerName(name);
+    free(name);
+    return selector;
 }
 
 // takes __PRETTY_FUNCTION__ for info which gives the name of the swizzle source class
@@ -59,13 +57,14 @@ static Class classFromInfo(const char *info) {
  Then we call it directly, passing in the correct selector and self
  
  */
-ZKIMP ZKOriginalImplementation(id self, SEL sel, const char *info) {
+static ZKIMP resolveSuper(id object, SEL sel, Class destination);
+
+static ZKIMP resolveOriginal(id self, SEL sel, const char *info, Class cls, Class destination, SEL destSel) {
     if (sel == NULL || self == NULL || info == NULL) {
         [NSException raise:@"Invalid Arguments" format:@"One of self: %@, self: %@, or info: %s is NULL", self, NSStringFromSelector(sel), info];
         return NULL;
     }
     
-    Class cls = classFromInfo(info);
     Class dest = object_getClass(self);
     
     if (cls == NULL || dest == NULL) {
@@ -73,21 +72,17 @@ ZKIMP ZKOriginalImplementation(id self, SEL sel, const char *info) {
         return NULL;
     }
     
-    SEL destSel = destinationSelectorForSelector(sel, cls);
-    
-    Method method =  class_getInstanceMethod(dest, destSel);
-    
-    if (method == NULL) {
-        if (![NSStringFromClass(cls) isEqualToString:NSStringFromClass([self class])]) {
+    if (!class_respondsToSelector(dest, destSel)) {
+        if (cls != [self class]) {
             // There is no implementation at this class level. Call the super implementation
-            return ZKSuperImplementation(self, sel, info);
+            return resolveSuper(self, sel, destination);
         }
         
         [NSException raise:@"Failed to retrieve method" format:@"Got null for the source class %@ with selector %@ (%@)", NSStringFromClass(cls), NSStringFromSelector(sel), NSStringFromSelector(destSel)];
         return NULL;
     }
     
-    ZKIMP implementation = (ZKIMP)method_getImplementation(method);
+    ZKIMP implementation = (ZKIMP)class_getMethodImplementation(dest, destSel);
     if (implementation == NULL) {
         [NSException raise:@"Failed to get implementation" format:@"The objective-c runtime could not get the implementation for %@ on the class %@. There is no fix for this", NSStringFromClass(cls), NSStringFromSelector(sel)];
     }
@@ -95,7 +90,41 @@ ZKIMP ZKOriginalImplementation(id self, SEL sel, const char *info) {
     return implementation;
 }
 
+ZKIMP ZKOriginalImplementation(id self, SEL sel, const char *info) {
+    sel = selectorFromInfo(info, sel);
+    Class cls = classFromInfo(info);
+    return resolveOriginal(self, sel, info, cls, objc_getAssociatedObject(cls, &sourceDestinationKey),
+                           cls && sel ? destinationSelectorForSelector(sel, cls) : NULL);
+}
+
+static void initializeSite(ZKCallSite *site, SEL sel, const char *info) {
+    dispatch_once(&site->once, ^{
+        site->source = classFromInfo(info);
+        site->destination = objc_getAssociatedObject(site->source, &sourceDestinationKey);
+        site->selector = selectorFromInfo(info, sel);
+        if (site->source) site->originalSelector = destinationSelectorForSelector(site->selector, site->source);
+    });
+}
+
+ZKIMP ZKOriginalImplementationAtSite(id self, SEL sel, const char *info, ZKCallSite *site) {
+    if (!self || !sel || !info || !site) return ZKOriginalImplementation(self, sel, info);
+    initializeSite(site, sel, info);
+    Class destination = site->destination ?: objc_getAssociatedObject(site->source, &sourceDestinationKey);
+    return resolveOriginal(self, site->selector, info, site->source, destination, site->originalSelector);
+}
+
 ZKIMP ZKSuperImplementation(id object, SEL sel, const char *info) {
+    sel = selectorFromInfo(info, sel);
+    return resolveSuper(object, sel, objc_getAssociatedObject(classFromInfo(info), &sourceDestinationKey));
+}
+
+ZKIMP ZKSuperImplementationAtSite(id object, SEL sel, const char *info, ZKCallSite *site) {
+    if (!object || !sel || !info || !site) return ZKSuperImplementation(object, sel, info);
+    initializeSite(site, sel, info);
+    return resolveSuper(object, site->selector, site->destination ?: objc_getAssociatedObject(site->source, &sourceDestinationKey));
+}
+
+static ZKIMP resolveSuper(id object, SEL sel, Class destination) {
     if (sel == NULL || object == NULL) {
         [NSException raise:@"Invalid Arguments" format:@"One of self: %@, self: %@ is NULL", object, NSStringFromSelector(sel)];
         return NULL;
@@ -115,18 +144,9 @@ ZKIMP ZKSuperImplementation(id object, SEL sel, const char *info) {
     // If this is a subclass of such a class, we want two behaviors:
     // a.) If this imp was also swizzled, no problem, return the superclass's swizzled imp
     // b.) This imp was not swizzled, return the class that was originally swizzled's superclass's imp
-    Class sourceClass = classFromInfo(info);
-    if (sourceClass != NULL) {
+    if (destination != NULL) {
         BOOL isClassMethod = class_isMetaClass(cls);
-        // This was called from a swizzled method, get the class it was swizzled with
-        NSString *className = classTable[NSStringFromClass(sourceClass)];
-        if (className != NULL) {
-            cls = NSClassFromString(className);
-            // make sure we get a class method if we asked for one
-            if (isClassMethod) {
-                cls = object_getClass(cls);
-            }
-        }
+        cls = isClassMethod ? object_getClass(destination) : destination;
     }
     
     cls = class_getSuperclass(cls);
@@ -137,13 +157,12 @@ ZKIMP ZKSuperImplementation(id object, SEL sel, const char *info) {
         return NULL;
     }
     
-    Method method = class_getInstanceMethod(cls, sel);
-    if (method == NULL) {
+    if (!class_respondsToSelector(cls, sel)) {
         [NSException raise:@"Failed to retrieve method" format:@"We could not find the super implementation for the class %@ and selector %@, are you sure it exists?", NSStringFromClass(cls), NSStringFromSelector(sel)];
         return NULL;
     }
     
-    ZKIMP implementation = (ZKIMP)method_getImplementation(method);
+    ZKIMP implementation = (ZKIMP)class_getMethodImplementation(cls, sel);
     if (implementation == NULL) {
         [NSException raise:@"Failed to get implementation" format:@"The objective-c runtime could not get the implementation for %@ on the class %@. There is no fix for this", NSStringFromClass(cls), NSStringFromSelector(sel)];
     }
@@ -164,21 +183,17 @@ BOOL _ZKSwizzle(Class src, Class dest) {
         return NO;
     }
     
-    if (!classTable) {
-        classTable = [[NSMutableDictionary alloc] init];
-    }
-    
-    if ([classTable objectForKey:NSStringFromClass(src)]) {
+    Class previousDestination = objc_getAssociatedObject(src, &sourceDestinationKey);
+    if (previousDestination) {
         [NSException raise:@"Invalid Argument"
-                    format:@"This source class (%@) was already swizzled with another, (%@)", NSStringFromClass(src), classTable[NSStringFromClass(src)]];
+                    format:@"This source class (%@) was already swizzled with another, (%@)", NSStringFromClass(src), NSStringFromClass(previousDestination)];
         return NO;
     }
-    
+    objc_setAssociatedObject(src, &sourceDestinationKey, dest, OBJC_ASSOCIATION_ASSIGN);
     BOOL success = enumerateMethods(dest, src);
     // The above method only gets instance methods. Do the same method for the metaclass of the class
     success     &= enumerateMethods(object_getClass(dest), object_getClass(src));
     
-    [classTable setObject:destName forKey:NSStringFromClass(src)];
     return success;
 }
 

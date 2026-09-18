@@ -1,61 +1,26 @@
 #include <AppKit/AppKit.h>
 #include "BackToCatalina.h"
 #include "ZKSwizzle.h"
+#include "dobby.h"
 
-static NSMutableDictionary<NSFont*, NSFont*> *btcNonBoldCache;
-
-static NSFont* BTCNonBoldVariant(NSFont *font) {
-    if (!font) {
-        return nil;
-    }
-    if (!btcNonBoldCache) {
-        btcNonBoldCache = [NSMutableDictionary dictionary];
-    }
-    NSFont *cached = btcNonBoldCache[font];
-    if (cached) {
-        return cached == (id)[NSNull null] ? nil : cached;
-    }
-
-    NSFontManager *fm = [NSFontManager sharedFontManager];
-    if (!([fm traitsOfFont:font] & NSBoldFontMask)) {
-        btcNonBoldCache[font] = (NSFont *)[NSNull null];
-        return nil;
-    }
-    NSFont *regular = [fm convertFont:font toNotHaveTrait:NSBoldFontMask];
-    btcNonBoldCache[font] = regular ?: (NSFont *)[NSNull null];
-    return regular;
+static _Thread_local NSUInteger BTCSidebarFontUpdateDepth;
+static NSFont *(*BTCOriginalConvertFontWeight)(NSFont *, CGFloat);
+static NSFont *BTCConvertFontWeight(NSFont *font, CGFloat weight) {
+    if (BTCSidebarFontUpdateDepth && weight == NSFontWeightSemibold) return font;
+    return BTCOriginalConvertFontWeight(font, weight);
 }
 
-static void BTCDeboldCell(NSCell *cell) {
-    NSAttributedString *attrValue = [cell attributedStringValue];
-    if (attrValue.length > 0) {
-        NSFont *font = [attrValue attribute:NSFontAttributeName atIndex:0 effectiveRange:NULL];
-        NSFont *regular = BTCNonBoldVariant(font);
-        if (regular) {
-            NSMutableAttributedString *mutableCopy = [attrValue mutableCopy];
-            [mutableCopy addAttribute:NSFontAttributeName value:regular range:NSMakeRange(0, mutableCopy.length)];
-            [cell setAttributedStringValue:mutableCopy];
-        }
-    }
-
-    NSFont *regularCellFont = BTCNonBoldVariant(cell.font);
-    if (regularCellFont) {
-        cell.font = regularCellFont;
-    }
+void BTCInstallSidebarFontHook(void) {
+    void *address = DobbySymbolResolver("AppKit", "_NSConvertFontToWeightIfNeeded");
+    if (!address || DobbyHook(address, (void *)BTCConvertFontWeight,
+                             (void **)&BTCOriginalConvertFontWeight) != 0)
+        NSLog(@"[BTC] Could not suppress automatic sidebar font weight");
 }
 
 hook(NSTableView)
 
 - (NSInteger)_resolvedSidebarType {
     return 2;
-}
-
-- (BOOL)_addSourceListCellAttributesToCell:(NSCell *)cell withData:(id)data selected:(BOOL)selected emphasized:(BOOL)emphasized {
-    BOOL result = ZKOrig(BOOL, cell, data, selected, emphasized);
-    if (isGoldenGateOrLater && selected) {
-        BTCDeboldCell(cell);
-    }
-    return result;
 }
 
 - (CGSize)intercellSpacing {
@@ -76,6 +41,26 @@ hook(NSTableView)
     }
     
     return orig;
+}
+
+endhook
+
+hook(NSTableView, BTCGoldenGateSidebarFont)
+
+- (NSDictionary *)_sourceListCellAttributesWithDefaultsForBlur:(NSDictionary *)defaults selected:(BOOL)selected emphasized:(BOOL)emphasized {
+    BTCSidebarFontUpdateDepth++;
+    @try { return ZKOrig(NSDictionary *, defaults, selected, emphasized); }
+    @finally { BTCSidebarFontUpdateDepth--; }
+}
+
+endhook
+
+hook(NSTableCellView, BTCGoldenGateSidebarFont)
+
+- (void)_updateFont {
+    BTCSidebarFontUpdateDepth++;
+    @try { ZKOrig(void); }
+    @finally { BTCSidebarFontUpdateDepth--; }
 }
 
 endhook

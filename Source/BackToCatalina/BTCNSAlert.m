@@ -2,18 +2,6 @@
 #include "dobby.h"
 #include "ZKSwizzle.h"
 
-// Entire section is dedicated to reverting Big Sur-style alert dialogs...
-Boolean (*AlertGlassSolariumEnabledOld)();
-Boolean AlertGlassSolariumEnabledNew() {
-    return false;
-}
-
-__attribute__((constructor)) void InitTweak(void) {
-    DobbyHook(DobbySymbolResolver(NULL, "_NSAlertGlassSolariumEnabled"),
-              AlertGlassSolariumEnabledNew,
-              &AlertGlassSolariumEnabledOld);
-}
-
 hook(NSAlert)
 
 static NSDictionary* wideAlertMetrics;

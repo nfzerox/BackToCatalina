@@ -28,6 +28,7 @@
         @"com.apple.SwiftUI.MacUnbridgedFormBoxes": @NO,
         @"com.apple.SwiftUI.MacUnbridgedMenuButtons": @NO,
         @"com.apple.SwiftUI.MacUnbridgedBorderedPickerButtons": @NO,
+        @"NSAlertGlassSolariumEnabled": @NO,
         @"NSGlassMenusEnabled": @NO,
         @"NSGlassMenuLayoutEnabled": @NO,
         @"NSMenuEnableActionImages": @NO,

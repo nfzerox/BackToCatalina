@@ -77,10 +77,16 @@
 //// Core Macros (For fine-tuned Use)
 ////////////////////////////////////////////////////////////////////////////////
 // returns the original implementation of the swizzled function or null or not found
-#define ZKOrig(TYPE, ...) ((TYPE (*)(id, SEL WRAP_LIST(__VA_ARGS__)))(ZKOriginalImplementation(self, _cmd, __PRETTY_FUNCTION__)))(self, _cmd, ##__VA_ARGS__)
+#define ZKOrig(TYPE, ...) ((TYPE (*)(id, SEL WRAP_LIST(__VA_ARGS__)))({ \
+    static ZKCallSite site; \
+    ZKOriginalImplementationAtSite(self, _cmd, __PRETTY_FUNCTION__, &site); \
+}))(self, _cmd, ##__VA_ARGS__)
 
 // returns the original implementation of the superclass of the object swizzled
-#define ZKSuper(TYPE, ...) ((TYPE (*)(id, SEL WRAP_LIST(__VA_ARGS__)))(ZKSuperImplementation(self, _cmd, __PRETTY_FUNCTION__)))(self, _cmd, ##__VA_ARGS__)
+#define ZKSuper(TYPE, ...) ((TYPE (*)(id, SEL WRAP_LIST(__VA_ARGS__)))({ \
+    static ZKCallSite site; \
+    ZKSuperImplementationAtSite(self, _cmd, __PRETTY_FUNCTION__, &site); \
+}))(self, _cmd, ##__VA_ARGS__)
 
 #define _ZKSwizzleInterfaceConditionally(CLASS_NAME, TARGET_CLASS, SUPERCLASS, GROUP, IMMEDIATELY) \
     @interface _$ ## CLASS_NAME : SUPERCLASS @end\
@@ -148,6 +154,16 @@ __BEGIN_DECLS
 // Make sure to cast this before you use it
 typedef id (*ZKIMP)(id, SEL, ...);
 
+typedef struct {
+    dispatch_once_t once;
+    Class source;
+    Class destination;
+    SEL selector;
+    SEL originalSelector;
+} ZKCallSite;
+ZKIMP ZKOriginalImplementationAtSite(id object, SEL selector, const char *info, ZKCallSite *site);
+ZKIMP ZKSuperImplementationAtSite(id object, SEL selector, const char *info, ZKCallSite *site);
+
 // returns a pointer to the instance variable "name" on the object
 void *ZKIvarPointer(id self, const char *name);
 // returns the original implementation of a method with selector "sel" of an object hooked by the methods below
@@ -170,4 +186,3 @@ BOOL _ZKSwizzleClass(Class cls);
 
 __END_DECLS
 #endif
-

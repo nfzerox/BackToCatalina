@@ -8,6 +8,24 @@
 #include "../BackToCatalina.h"
 #include "../ZKSwizzle.h"
 
+static char BTCReplacementGlyphKey;
+static inline void BTCMarkReplacementGlyph(NSImage *image) {
+    if (image) objc_setAssociatedObject(image, &BTCReplacementGlyphKey, @YES, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+static inline BOOL BTCIsReplacementGlyph(NSImage *image) {
+    return [objc_getAssociatedObject(image, &BTCReplacementGlyphKey) boolValue];
+}
+
+@interface NSImage (BTCGlyphSymbol)
+- (BOOL)_isSymbolImage;
+- (NSString *)_symbolName;
+- (id)_reps;
+@end
+
+@interface NSObject (BTCGlyphRepresentation)
+- (NSString *)symbolName;
+@end
+
 @interface NSWindow (GlyphRef)
 - (id)_toolbarView;
 @end
@@ -18,12 +36,12 @@
 
 static inline NSString* GetSymbolName(NSImage* symbol) {
     if ([symbol respondsToSelector:@selector(_symbolName)]) {
-        return [symbol valueForKey:@"_symbolName"];
+        return [symbol _symbolName];
     }
-    if ([symbol respondsToSelector:NSSelectorFromString(@"_reps")]) {
-        id reps = [symbol valueForKey:@"_reps"];
-        if ([reps respondsToSelector:NSSelectorFromString(@"symbolName")]) {
-            return [reps valueForKey:@"symbolName"];
+    if ([symbol respondsToSelector:@selector(_reps)]) {
+        id reps = [symbol _reps];
+        if ([reps respondsToSelector:@selector(symbolName)]) {
+            return [reps symbolName];
         }
     }
     return nil;

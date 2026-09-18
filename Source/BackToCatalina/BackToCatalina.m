@@ -7,6 +7,45 @@ NSBundle* carBundle;
 BOOL isTahoeOrLater;
 BOOL isGoldenGateOrLater;
 BOOL isSafari27OrLater;
+BOOL isPhotos;
+BOOL isMessages;
+BOOL isReminders;
+BOOL isWeather;
+BOOL isFinder;
+BOOL isShortcuts;
+BOOL isCalendar;
+
+void BTCInstallToolbarAnimationHooks(void);
+void BTCInstallSidebarFontHook(void);
+
+__attribute__((constructor)) static void BTCInstallAppHooks(void) {
+    ZKSwizzleGroup(BTCSwiftUIToolbarButtons);
+    ZKSwizzleGroup(BTCWindowSidebarActions);
+
+    if (isShortcuts) ZKSwizzleGroup(BTCShortcuts);
+    if (isTahoeOrLater) ZKSwizzleGroup(BTCWindowAnimation);
+    if (isTahoeOrLater) BTCInstallToolbarAnimationHooks();
+    if (isTahoeOrLater && isReminders) ZKSwizzleGroup(BTCReminders);
+    if (isTahoeOrLater && isCalendar) ZKSwizzleGroup(BTCCalendar);
+    if (isTahoeOrLater && isPhotos) {
+        ZKSwizzleGroup(BTCPhotos);
+    } else {
+        ZKSwizzleGroup(BTCDefaultWindowToolbarStyle);
+    }
+    if (isTahoeOrLater && isMessages) {
+        ZKSwizzleGroup(BTCMessages);
+    } else {
+        ZKSwizzleGroup(BTCDisableSectionTracking);
+    }
+
+    if (isGoldenGateOrLater && isFinder) ZKSwizzleGroup(BTCFinderTableSpacing);
+    if (isGoldenGateOrLater) ZKSwizzleGroup(BTCGoldenGateToolbarContextMenu);
+    if (isGoldenGateOrLater) {
+        BTCInstallSidebarFontHook();
+        ZKSwizzleGroup(BTCGoldenGateSidebarFont);
+    }
+    if (isWeather && isGoldenGateOrLater) ZKSwizzleGroup(BTCWeather);
+}
 
 Boolean (*CompatWidgetOld)(void);
 Boolean CompatWidgetNew(void) {
@@ -42,6 +81,13 @@ WEAK_IMPORT_ATTRIBUTE
     // Check if we are on Tahoe or later
     isTahoeOrLater = [NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:tahoeVersion];
     isGoldenGateOrLater = [NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:goldenGateVersion];
+    isPhotos = [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.Photos"];
+    isFinder = [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.finder"];
+    isShortcuts = [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.shortcuts"];
+    isMessages = [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.MobileSMS"];
+    isReminders = [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.reminders"];
+    isWeather = [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.weather"];
+    isCalendar = [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.iCal"];
     
     NSString *versionString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
     if (versionString) {

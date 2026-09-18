@@ -1,5 +1,6 @@
 #include <AppKit/AppKit.h>
 #include "ZKSwizzle.h"
+#include "BTCPhotosWindow.h"
 
 @interface NSWindow ()
 - (BOOL)_isUtilityWindow;
@@ -19,14 +20,6 @@ hook(NSWindow)
 
 - (NSUInteger)sheetBehavior {
     return 3;
-}
-
-- (id)_sidebarTrackingAdapter {
-    return nil;
-}
-
-- (id)_newStandardItemWithItemIdentifier:(id)arg0 willBeInsertedIntoToolbar:(BOOL)arg1 {
-    return nil;
 }
 
 - (void)setTitlebarAppearsTransparent:(BOOL)value {
@@ -56,16 +49,6 @@ hook(NSWindow)
     return [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.systempreferences"] ? 1 : ZKOrig(long long);
 }
 
-// Revert (most) preference windows to being left-aligned
-- (NSWindowToolbarStyle)toolbarStyle {
-    return NSWindowToolbarStyleUnified;
-}
-
-// Apply for some other cases too
-- (void)setToolbarStyle:(NSWindowToolbarStyle)toolbarStyle {
-    return ZKOrig(void, NSWindowToolbarStyleUnified);
-}
-
 // Get rid of the new translucent separator for standard titlebars
 - (NSTitlebarSeparatorStyle)titlebarSeparatorStyle {
     return NSTitlebarSeparatorStyleNone;
@@ -78,6 +61,15 @@ hook(NSWindow)
 
 endhook
 
+hook(NSWindow, BTCDefaultWindowToolbarStyle)
+- (NSWindowToolbarStyle)toolbarStyle {
+    return NSWindowToolbarStyleUnified;
+}
+- (void)setToolbarStyle:(NSWindowToolbarStyle)toolbarStyle {
+    return ZKOrig(void, NSWindowToolbarStyleUnified);
+}
+endhook
+
 hook(NSSheetMoveHelper)
 - (instancetype)initWithSheet:(id)sheet {
     NSSheetMoveHelper *helper = _orig(NSSheetMoveHelper *, sheet);
@@ -88,7 +80,13 @@ hook(NSSheetMoveHelper)
 }
 endhook
 
-hook(NSSavePanelServicePanel)
+hook(NSWindow, BTCDisableSectionTracking)
+- (id)_sidebarTrackingAdapter {
+    return nil;
+}
+endhook
+
+hook(NSSavePanelServicePanel, BTCDisableSectionTracking)
 - (id)_sidebarTrackingAdapter {
     return nil;
 }

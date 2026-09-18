@@ -8,22 +8,12 @@
 #include "BackToCatalina.h"
 #include "ZKSwizzle.h"
 
+@interface NSTextField (BTCLayoutQueries)
+- (BOOL)_wantsSeparatedSubviews;
+- (id)hostingToolbarItem;
+@end
+
 hook(NSTextField)
-
-- (BOOL)isBezeled {
-    return ZKOrig(BOOL);
-}
-
-- (BOOL)_wantsSeparatedSubviews {
-    if (!isTahoeOrLater) return NO; // The function doesn't exist before Tahoe
-    
-    return ZKOrig(BOOL);
-}
-
-// If we don't check for if the frame is hosted within a toolbar, the changes cause a visual offset bug
-- (id)hostingToolbarItem {
-    return ZKOrig(id);
-}
 
 - (BOOL)supportsFauxSolariumControlMetrics {
     return NO;
@@ -33,7 +23,9 @@ hook(NSTextField)
 - (void)setFrameSize:(CGSize)frameSize {
     // HACKY!!
     // Actual core of the problem relates to the way the image is incompatible with the 9-silce format that newer SystemAppearance *is* compatible with. Pre-BigSur, all input fields therefore had to be the same height. Catalina and earlier therefore need this issue mitigated.
-    frameSize.height = ([self isBezeled] && [self _wantsSeparatedSubviews] && ![self hostingToolbarItem]) ? MIN(frameSize.height, 22.0) : frameSize.height;
+    NSTextField *field = (NSTextField *)self;
+    if (frameSize.height > 22.0 && isTahoeOrLater && [field isBezeled] &&
+        [field _wantsSeparatedSubviews] && ![field hostingToolbarItem]) frameSize.height = 22.0;
     
     return ZKOrig(void, frameSize);
 }
@@ -48,13 +40,11 @@ hook(NSTextField)
 
 // Class used in Finder is TTextField - not part of standard OS-level headers, but this itself seems to be a subclass of NSTextField
 - (void)setFrameOrigin:(NSPoint)origin {
-    NSString* identifier = [self valueForKey:@"identifier"];
-    
     // Fix the lack of padding from the left-hand side
     // The header should always have this identifier
-    if ([identifier isEqualToString:@"xSidebarHeader"]) {
+    if (origin.x <= 6.0 && [[(NSTextField *)self identifier] isEqualToString:@"xSidebarHeader"]) {
         // Check that the origin value is already lower than it ought to be to avoid affecting visuals when NSSidebarUsesGoldenStyles is enabled
-        if (origin.x <= 6.0) origin.x += 6.0;
+        origin.x += 6.0;
     }
     
     return ZKOrig(void, origin);

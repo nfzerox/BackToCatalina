@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "dobby.h"
+#include <time.h>
 
 enum { BTCSolariumDisabled = 0, BTCSolariumCompatibility = 1, BTCSolariumEnabled = 2 };
 
@@ -44,12 +45,17 @@ static void *BTCResolve(const char *image, const char *sym) {
 }
 
 static BOOL BTCInstall(const char *image, const char *sym, void *fake, void **orig) {
+    BOOL profile = getenv("BTC_PROFILE_HOOK_INSTALL") != NULL;
+    uint64_t start = profile ? clock_gettime_nsec_np(CLOCK_UPTIME_RAW) : 0;
     void *addr = BTCResolve(image, sym);
+    uint64_t resolved = profile ? clock_gettime_nsec_np(CLOCK_UPTIME_RAW) : 0;
     if (!addr) {
         NSLog(@"[BTC] resolve FAILED: %s/%s", image ? image : "*", sym);
         return NO;
     }
     int rc = DobbyHook(addr, fake, orig);
+    if (profile) fprintf(stderr, "BTC_INSTALL %s resolve_ms=%.3f hook_ms=%.3f\n", sym,
+                         (resolved-start)/1e6, (clock_gettime_nsec_np(CLOCK_UPTIME_RAW)-resolved)/1e6);
     NSLog(@"[BTC] hook %@ %s/%s @ %p", rc == 0 ? @"OK" : @"ERR", image ? image : "*", sym, addr);
     return rc == 0;
 }

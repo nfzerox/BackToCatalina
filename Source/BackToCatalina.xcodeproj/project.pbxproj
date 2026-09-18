@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D0C000000000000000000006 /* DockBar.m in Sources */ = {isa = PBXBuildFile; fileRef = D0C000000000000000000002 /* DockBar.m */; };
-		D0C000000000000000000007 /* FloorLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = D0C000000000000000000003 /* FloorLayer.m */; };
-		D0C000000000000000000008 /* shared.m in Sources */ = {isa = PBXBuildFile; fileRef = D0C000000000000000000004 /* shared.m */; };
-		D0C000000000000000000009 /* ZKSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = D0C000000000000000000005 /* ZKSwizzle.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		D0C000000000000000000006 /* BackToCatalina/dock/DockBar.m in Sources */ = {isa = PBXBuildFile; fileRef = D0C000000000000000000002 /* BackToCatalina/dock/DockBar.m */; };
+		D0C000000000000000000007 /* BackToCatalina/dock/FloorLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = D0C000000000000000000003 /* BackToCatalina/dock/FloorLayer.m */; };
+		D0C000000000000000000008 /* BackToCatalina/dock/shared.m in Sources */ = {isa = PBXBuildFile; fileRef = D0C000000000000000000004 /* BackToCatalina/dock/shared.m */; };
+		D0C000000000000000000009 /* BackToCatalina/ZKSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = D0C000000000000000000005 /* BackToCatalina/ZKSwizzle.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		D0C000000000000000000015 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0C000000000000000000013 /* Foundation.framework */; };
 		D0C000000000000000000016 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0C000000000000000000014 /* QuartzCore.framework */; };
 /* End PBXBuildFile section */
@@ -28,10 +28,10 @@
 /* Begin PBXFileReference section */
 		045FD9652F1D8349000D3963 /* libBackToCatalina.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libBackToCatalina.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0C000000000000000000001 /* libBackToCatalinaDock.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libBackToCatalinaDock.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		D0C000000000000000000002 /* DockBar.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BackToCatalina/dock/DockBar.m; sourceTree = SOURCE_ROOT; };
-		D0C000000000000000000003 /* FloorLayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BackToCatalina/dock/FloorLayer.m; sourceTree = SOURCE_ROOT; };
-		D0C000000000000000000004 /* shared.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BackToCatalina/dock/shared.m; sourceTree = SOURCE_ROOT; };
-		D0C000000000000000000005 /* ZKSwizzle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BackToCatalina/ZKSwizzle.m; sourceTree = SOURCE_ROOT; };
+		D0C000000000000000000002 /* BackToCatalina/dock/DockBar.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BackToCatalina/dock/DockBar.m; sourceTree = SOURCE_ROOT; };
+		D0C000000000000000000003 /* BackToCatalina/dock/FloorLayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BackToCatalina/dock/FloorLayer.m; sourceTree = SOURCE_ROOT; };
+		D0C000000000000000000004 /* BackToCatalina/dock/shared.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BackToCatalina/dock/shared.m; sourceTree = SOURCE_ROOT; };
+		D0C000000000000000000005 /* BackToCatalina/ZKSwizzle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BackToCatalina/ZKSwizzle.m; sourceTree = SOURCE_ROOT; };
 		D0C000000000000000000013 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D0C000000000000000000014 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		D0C000000000000000000017 /* package.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = package.sh; sourceTree = "<group>"; };
@@ -83,6 +83,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		041C923F305BC8E3000BEBF3 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				D0C000000000000000000002 /* BackToCatalina/dock/DockBar.m */,
+				D0C000000000000000000003 /* BackToCatalina/dock/FloorLayer.m */,
+				D0C000000000000000000004 /* BackToCatalina/dock/shared.m */,
+				D0C000000000000000000005 /* BackToCatalina/ZKSwizzle.m */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		045FD95C2F1D8349000D3963 = {
 			isa = PBXGroup;
 			children = (
@@ -91,6 +102,7 @@
 				D0C000000000000000000013 /* Foundation.framework */,
 				D0C000000000000000000014 /* QuartzCore.framework */,
 				045FD9662F1D8349000D3963 /* Products */,
+				041C923F305BC8E3000BEBF3 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -237,10 +249,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D0C000000000000000000006 /* DockBar.m in Sources */,
-				D0C000000000000000000007 /* FloorLayer.m in Sources */,
-				D0C000000000000000000008 /* shared.m in Sources */,
-				D0C000000000000000000009 /* ZKSwizzle.m in Sources */,
+				D0C000000000000000000006 /* BackToCatalina/dock/DockBar.m in Sources */,
+				D0C000000000000000000007 /* BackToCatalina/dock/FloorLayer.m in Sources */,
+				D0C000000000000000000008 /* BackToCatalina/dock/shared.m in Sources */,
+				D0C000000000000000000009 /* BackToCatalina/ZKSwizzle.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,7 +323,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.7;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -366,6 +378,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.7;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 			};
 			name = Release;

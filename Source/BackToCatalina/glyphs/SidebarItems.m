@@ -9,10 +9,12 @@
 #include "../ZKSwizzle.h"
 
 NSImage* FindLegacySidebarGlyph(NSString* symbolName) {
-    static NSMutableDictionary<NSString*, NSImage*>* cache;
+    if (!symbolName || !carBundle) return nil;
+    static NSCache *cache;
     static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{ cache = [NSMutableDictionary dictionary]; });
-    if (cache[symbolName]) return cache[symbolName];
+    dispatch_once(&onceToken, ^{ cache = [NSCache new]; });
+    id cached = [cache objectForKey:symbolName];
+    if (cached) return cached == NSNull.null ? nil : cached;
 
     if (carBundle) {
         // We can humbly assume that if our appearance bundle exists, its contents also do
@@ -22,8 +24,9 @@ NSImage* FindLegacySidebarGlyph(NSString* symbolName) {
                 // path likely already included
                 NSImage* image = [[NSImage alloc] initWithContentsOfFile:legacyGlyphName];
                 [image setTemplate:YES];
+                BTCMarkReplacementGlyph(image);
                 
-                cache[symbolName] = image;
+                [cache setObject:image ?: NSNull.null forKey:symbolName];
                 return image;
             } else if (legacyGlyphName) {
                 // Do the same as we do for toolbar glyphs
@@ -32,8 +35,9 @@ NSImage* FindLegacySidebarGlyph(NSString* symbolName) {
             
                 NSImage* image = [[NSImage alloc] initWithContentsOfFile:path];
                 [image setTemplate:YES];
+                BTCMarkReplacementGlyph(image);
                 
-                cache[symbolName] = image;
+                [cache setObject:image ?: NSNull.null forKey:symbolName];
                 return image;
                 
             }
@@ -54,12 +58,13 @@ BOOL IsInsideSidebarStyleList(NSView* view) {
 }
 
 NSImage* GetSidebarButtonImage(NSView* view, NSImage* symbol) {
+    NSString *identifier = GetSymbolName(symbol);
+    if (!identifier || !carBundle) return symbol;
     if (!IsInsideSidebarStyleList(view)) {
         // Return unmodified image if we aren't a sidebar
         return symbol;
     }
 
-    NSString* identifier = GetSymbolName(symbol);
     NSImage* glyph = FindLegacySidebarGlyph(identifier);
     
     // Depending on whether it exists, return either our glyph, or the SF Symbol
@@ -67,6 +72,7 @@ NSImage* GetSidebarButtonImage(NSView* view, NSImage* symbol) {
 }
 
 CGRect CalculateSidebarImageFrame(NSView* view, NSImage* image, CGRect frame) {
+    if (!BTCIsReplacementGlyph(image)) return frame;
     BOOL isSymbolImage = [image _isSymbolImage];
     
     if (isSymbolImage || !IsInsideSidebarStyleList(view)) {

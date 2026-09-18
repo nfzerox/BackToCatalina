@@ -12,6 +12,10 @@
 
 extern NSImage* FindLegacySidebarGlyph(NSString* symbolName);
 
+@interface NSMenu (BTCMenuRole)
+- (BOOL)_isAppleMenu;
+@end
+
 static BOOL BTCActionMatchesFinderGoMenu(SEL action) {
     if (!action) {
         return NO;
@@ -65,6 +69,10 @@ hook(NSMenuItem)
     
     NSMenuItem *item = (NSMenuItem *)self;
     if (!orig.isTemplate || item.title.length < 1) {
+        return orig;
+    }
+    BOOL appleMenu = [item.menu respondsToSelector:@selector(_isAppleMenu)] && [item.menu _isAppleMenu];
+    if (!appleMenu && !BTCMenuIsPartOfMainMenu(item.menu)) {
         return orig;
     }
 
